@@ -1,0 +1,131 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  personnels   Personnel[]
+  student      Student[]
+  userRoles    UserRoles[]
+  activeTokens ActiveToken[]
+}
+
+model StudyProgram {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  personnels Personnel[]
+  officials  Official[]
+  students   Student[]
+}
+
+model Personnel {
+  id             Int           @id @default(autoincrement())
+  name           String
+  position       String
+  studyProgram   StudyProgram? @relation(fields: [studyProgramId], references: [id])
+  studyProgramId Int?
+  user           User          @relation(fields: [userId], references: [id])
+  userId         Int
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Official {
+  id             Int           @id @default(autoincrement())
+  name           String
+  occupation     String
+  nip            String
+  studyProgram   StudyProgram? @relation(fields: [studyProgramId], references: [id])
+  studyProgramId Int?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Student {
+  id             Int          @id @default(autoincrement())
+  user           User         @relation(fields: [userId], references: [id])
+  userId         Int          @unique
+  studyProgram   StudyProgram @relation(fields: [studyProgramId], references: [id])
+  studyProgramId Int
+  fullname       String
+  nim            String       @unique
+  class_year     String
+  address        String
+  phone_number   String?
+  birthday       DateTime?
+  birthplace     String?
+  gender         String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Role {
+  id              Int              @id @default(autoincrement())
+  name            String           @unique
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  rolePermissions RolePermission[]
+  userRoles       UserRoles[]
+}
+
+model Permission {
+  id              Int              @id @default(autoincrement())
+  name            String           @unique
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  rolePermissions RolePermission[]
+}
+
+model RolePermission {
+  id           Int        @id @default(autoincrement())
+  role         Role       @relation(fields: [roleId], references: [id])
+  roleId       Int
+  permission   Permission @relation(fields: [permissionId], references: [id])
+  permissionId Int
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([roleId, permissionId])
+}
+
+model UserRoles {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  role      Role     @relation(fields: [roleId], references: [id])
+  roleId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, roleId])
+}
+
+model ActiveToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
