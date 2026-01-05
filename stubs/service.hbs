@@ -17,7 +17,7 @@ export class {{pascalCase name}}Service {
   }
 
   async findAll(query: Query{{pascalCase name}}Dto) {
-    const { page = 1, limit = 10, search } = query;
+    const { page , limit , search } = query;
 
     const where: Prisma.{{pascalCase name}}WhereInput = {};
 
@@ -56,6 +56,7 @@ export class {{pascalCase name}}Service {
   }
 
   async update(id: number, updateDto: Update{{pascalCase name}}Dto) {
+    await this.findOne(id);
     return await this.prismaService.{{camelCase name}}.update({
       where: { id },
       data: updateDto,
@@ -63,6 +64,7 @@ export class {{pascalCase name}}Service {
   }
 
   async remove(id: number) {
+    await this.findOne(id);
     return await this.prismaService.{{camelCase name}}.delete({
       where: { id },
     });

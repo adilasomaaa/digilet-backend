@@ -176,16 +176,16 @@ model Letter {
 }
 
 model Header {
-  id             Int          @id @default(autoincrement())
-  studyProgramId Int
-  studyProgram   StudyProgram @relation(fields: [studyProgramId], references: [id])
+  id             Int           @id @default(autoincrement())
+  studyProgramId Int?
+  studyProgram   StudyProgram? @relation(fields: [studyProgramId], references: [id])
   name           String
   header         String
   subheader      String
   address        String
   logo           String
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   letterHeads LetterHead[]
 }
@@ -204,7 +204,7 @@ model LetterTemplate {
   id        Int      @id @default(autoincrement())
   letterId  Int
   letter    Letter   @relation(fields: [letterId], references: [id], onDelete: Cascade)
-  content   String
+  content   String   @db.LongText
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -248,25 +248,25 @@ model GeneralLetterSubmission {
 }
 
 model LetterSignature {
-  id                        Int                     @id @default(autoincrement())
-  studentLetterSubmissionId Int
-  studentLetterSubmission   StudentLetterSubmission @relation(fields: [studentLetterSubmissionId], references: [id], onDelete: Cascade)
-  generalLetterSubmissionId Int
-  generalLetterSubmission   GeneralLetterSubmission @relation(fields: [generalLetterSubmissionId], references: [id], onDelete: Cascade)
+  id                        Int                      @id @default(autoincrement())
+  studentLetterSubmissionId Int?
+  studentLetterSubmission   StudentLetterSubmission? @relation(fields: [studentLetterSubmissionId], references: [id], onDelete: Cascade)
+  generalLetterSubmissionId Int?
+  generalLetterSubmission   GeneralLetterSubmission? @relation(fields: [generalLetterSubmissionId], references: [id], onDelete: Cascade)
   letterSignatureTemplateId Int
-  letterSignatureTemplate   LetterSignatureTemplate @relation(fields: [letterSignatureTemplateId], references: [id], onDelete: Cascade)
+  letterSignatureTemplate   LetterSignatureTemplate  @relation(fields: [letterSignatureTemplateId], references: [id], onDelete: Cascade)
   signature                 String
   verifiedAt                DateTime?
-  createdAt                 DateTime                @default(now())
-  updatedAt                 DateTime                @updatedAt
+  createdAt                 DateTime                 @default(now())
+  updatedAt                 DateTime                 @updatedAt
 }
 
 model letterDocument {
   id                  Int                  @id @default(autoincrement())
   letterId            Int
   letter              Letter               @relation(fields: [letterId], references: [id], onDelete: Cascade)
-  docuentName         String
-  filePath            String               @default("pdf")
+  documentName        String
+  fileType            String               @default("pdf")
   isRequired          Boolean              @default(false)
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt

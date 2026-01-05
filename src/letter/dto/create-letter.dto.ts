@@ -15,21 +15,19 @@ export class CreateLetterDto {
 
   @ApiProperty({ example: '2023-09-10', description: 'tanggal kedaluwarsa' })
   @IsNotEmpty({ message: 'tanggal kedaluwarsa tidak boleh kosong' })
-  @IsString({ message: 'tanggal kedaluwarsa harus berupa string' })
   expiredDate: number;
 
   @ApiProperty({ example: 1, description: 'nomor urut surat' })
   @IsNotEmpty({ message: 'nomor urut surat tidak boleh kosong' })
-  @IsString({ message: 'nomor urut surat harus berupa string' })
   letterNumberingStart: number;
 
   @ApiProperty({
     description: 'kategori surat',
-    enum: ['fakultas', 'jurusan', 'universitas', 'all'],
+    enum: ['faculty', 'study_program', 'university', 'all'],
   })
   @IsNotEmpty({ message: 'kategori surat tidak boleh kosong' })
-  @IsIn(['fakultas', 'jurusan', 'universitas', 'all'], {
-    message: 'tipe harus berupa fakultas, jurusan, universitas, atau all',
+  @IsIn(['faculty', 'study_program', 'university', 'all'], {
+    message: 'tipe harus berupa faculty, study_program, university, atau all',
   })
   category: LetterCategory;
 

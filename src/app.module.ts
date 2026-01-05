@@ -11,6 +11,8 @@ import { PersonnelModule } from './personnel/personnel.module';
 import { StudentModule } from './student/student.module';
 import { OfficialModule } from './official/official.module';
 import { LetterModule } from './letter/letter.module';
+import { HeaderModule } from './header/header.module';
+import { LetterheadModule } from './letterhead/letterhead.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { LetterModule } from './letter/letter.module';
     StudentModule,
     OfficialModule,
     LetterModule,
+    HeaderModule,
+    LetterheadModule,
   ],
   providers: [
     FileUploadService,
