@@ -3,6 +3,7 @@ import { CreateOfficialDto } from './dto/create-official.dto';
 import { UpdateOfficialDto } from './dto/update-official.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { QueryOfficialDto } from './dto/query-official.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class OfficialService {
@@ -15,10 +16,20 @@ export class OfficialService {
   }
 
   async findAll(query: QueryOfficialDto) {
-    const { page = 1, limit = 10 } = query;
+    const { page = 1, limit = 10, search } = query;
+
+    const where: Prisma.OfficialWhereInput = {};
+
+    if (search) {
+      where.OR = [{ name: { contains: search } }];
+    }
 
     const [data, total] = await this.prismaService.$transaction([
       this.prismaService.official.findMany({
+        include: {
+          studyProgram: true,
+        },
+        where,
         skip: (Number(page) - 1) * Number(limit),
         take: Number(limit),
         orderBy: { createdAt: 'asc' },

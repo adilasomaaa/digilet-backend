@@ -9,6 +9,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { QueryStudentDto } from './dto/query-student.dto';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import { Prisma } from '@prisma/client';
+import * as ExcelJS from 'exceljs';
 
 @Injectable()
 export class StudentService {
@@ -76,9 +78,9 @@ export class StudentService {
             fullname: createDto.fullname,
             nim: createDto.nim,
             studyProgramId: createDto.studyProgramId,
-            class_year: createDto.class_year,
+            classYear: createDto.classYear,
             address: createDto.address,
-            phone_number: createDto.phone_number,
+            phoneNumber: createDto.phoneNumber,
             birthday: birthdayValue,
             birthplace: createDto.birthplace,
             gender: createDto.gender,
@@ -98,7 +100,13 @@ export class StudentService {
   }
 
   async findAll(query: QueryStudentDto) {
-    const { page = 1, limit = 10 } = query;
+    const { page = 1, limit = 10, search } = query;
+
+    const where: Prisma.StudentWhereInput = {};
+
+    if (search) {
+      where.OR = [{ fullname: { contains: search } }];
+    }
 
     const [data, total] = await this.prismaService.$transaction([
       this.prismaService.student.findMany({
@@ -108,6 +116,7 @@ export class StudentService {
           studyProgram: true,
           user: true,
         },
+        where,
         orderBy: { createdAt: 'asc' },
       }),
       this.prismaService.student.count(),
@@ -128,6 +137,7 @@ export class StudentService {
     const data = await this.prismaService.student.findUnique({
       where: { id },
     });
+
     if (!data) {
       throw new NotFoundException('Student tidak ditemukan');
     }
@@ -188,9 +198,9 @@ export class StudentService {
             fullname: updateDto.fullname,
             nim: updateDto.nim,
             studyProgramId: updateDto.studyProgramId,
-            class_year: updateDto.class_year,
+            classYear: updateDto.classYear,
             address: updateDto.address,
-            phone_number: updateDto.phone_number,
+            phoneNumber: updateDto.phoneNumber,
             birthday: birthdayValue,
             birthplace: updateDto.birthplace,
             gender: updateDto.gender,
@@ -205,8 +215,139 @@ export class StudentService {
   }
 
   async remove(id: number) {
-    return await this.prismaService.student.delete({
-      where: { id },
+    const student = this.findOne(id);
+    return await this.prismaService.user.delete({
+      where: { id: (await student).userId },
+    });
+  }
+
+  async exportToExcel() {
+    const students = await this.prismaService.student.findMany({
+      include: { studyProgram: true, user: true },
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Students');
+
+    worksheet.columns = [
+      { header: 'ID', key: 'id', width: 10 },
+      { header: 'Full Name', key: 'fullname', width: 30 },
+      { header: 'NIM', key: 'nim', width: 20 },
+      { header: 'Study Program', key: 'studyProgram', width: 25 },
+      { header: 'Class Year', key: 'classYear', width: 10 },
+      { header: 'Address', key: 'address', width: 30 },
+      { header: 'Phone Number', key: 'phoneNumber', width: 20 },
+      { header: 'Birthday', key: 'birthday', width: 15 },
+      { header: 'Birthplace', key: 'birthplace', width: 20 },
+      { header: 'Gender', key: 'gender', width: 10 },
+      { header: 'Email', key: 'email', width: 25 },
+    ];
+
+    students.forEach((student) => {
+      worksheet.addRow({
+        id: student.id,
+        fullname: student.fullname,
+        nim: student.nim,
+        studyProgram: student.studyProgram?.name || '',
+        classYear: student.classYear,
+        address: student.address,
+        phoneNumber: student.phoneNumber,
+        birthday: student.birthday
+          ? new Date(student.birthday).toISOString().split('T')[0]
+          : '',
+        birthplace: student.birthplace,
+        gender: student.gender,
+        email: student.user?.email || '',
+      });
+    });
+
+    worksheet.getRow(1).font = { bold: true };
+
+    return await workbook.xlsx.writeBuffer();
+  }
+
+  async importFromExcel(fileBuffer: Buffer, studyProgramId: number) {
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(fileBuffer as any);
+    const worksheet = workbook.getWorksheet(1);
+
+    if (studyProgramId === undefined) {
+      throw new BadRequestException('Program studi harus dipilih.');
+    }
+
+    if (!worksheet || worksheet.rowCount <= 1) {
+      throw new BadRequestException(
+        'File excel kosong atau hanya berisi header',
+      );
+    }
+
+    return await this.prismaService.$transaction(async (tx) => {
+      let createdStudentsCount = 0;
+
+      for (let i = 2; i <= worksheet.rowCount; i++) {
+        const row = worksheet.getRow(i);
+        const nim = row.getCell(2).value?.toString();
+        const email = row.getCell(9).value?.toString();
+
+        if (!nim) continue;
+
+        if (!email) {
+          throw new BadRequestException(
+            `Baris ${i}: Mahasiswa dengan NIM ${nim} wajib memiliki email karena akun User diperlukan.`,
+          );
+        }
+
+        await tx.student.upsert({
+          where: { nim: nim },
+          update: {
+            fullname: row.getCell(1).value?.toString() || '',
+            classYear: row.getCell(3).value?.toString() || '',
+            address: row.getCell(4).value?.toString() || '',
+            phoneNumber: row.getCell(5).value?.toString(),
+            birthday: row.getCell(6).value
+              ? new Date(row.getCell(6).value?.toString() || '')
+              : null,
+            birthplace: row.getCell(7).value?.toString(),
+            gender: row.getCell(8).value?.toString() || 'Not Specified',
+            studyProgram: { connect: { id: studyProgramId } },
+          },
+          create: {
+            fullname: row.getCell(1).value?.toString() || '',
+            nim: nim,
+            classYear: row.getCell(3).value?.toString() || '',
+            address: row.getCell(4).value?.toString() || '',
+            phoneNumber: row.getCell(5).value?.toString(),
+            birthday: row.getCell(6).value
+              ? new Date(row.getCell(6).value?.toString() || '')
+              : null,
+            birthplace: row.getCell(7).value?.toString(),
+            gender: row.getCell(8).value?.toString() || 'Not Specified',
+            studyProgram: { connect: { id: studyProgramId } },
+            user: {
+              connectOrCreate: {
+                where: { email: email },
+                create: {
+                  email: email,
+                  name: row.getCell(1).value?.toString() || '',
+                  password: await this.hashPassword(nim),
+                  userRoles: {
+                    create: {
+                      role: { connect: { name: 'student' } },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        createdStudentsCount++;
+      }
+
+      return {
+        message: 'Import berhasil diselesaikan',
+        total: createdStudentsCount,
+      };
     });
   }
 }

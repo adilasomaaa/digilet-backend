@@ -13,6 +13,25 @@ datasource db {
   provider = "mysql"
 }
 
+enum LetterCategory {
+  faculty
+  study_program
+  university
+  all
+}
+
+enum SignatureType {
+  digital
+  barcode
+}
+
+enum StudentLetterStatus {
+  pending
+  waiting_signature
+  approved
+  rejected
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -21,10 +40,12 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  personnels   Personnel[]
-  student      Student[]
-  userRoles    UserRoles[]
-  activeTokens ActiveToken[]
+  personnels               Personnel[]
+  student                  Student[]
+  userRoles                UserRoles[]
+  activeTokens             ActiveToken[]
+  letters                  Letter[]
+  generalLetterSubmissions GeneralLetterSubmission[]
 }
 
 model StudyProgram {
@@ -37,6 +58,7 @@ model StudyProgram {
   personnels Personnel[]
   officials  Official[]
   students   Student[]
+  headers    Header[]
 }
 
 model Personnel {
@@ -45,39 +67,41 @@ model Personnel {
   position       String
   studyProgram   StudyProgram? @relation(fields: [studyProgramId], references: [id])
   studyProgramId Int?
-  user           User          @relation(fields: [userId], references: [id])
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         Int
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 }
 
 model Official {
-  id             Int           @id @default(autoincrement())
-  name           String
-  occupation     String
-  nip            String
-  studyProgram   StudyProgram? @relation(fields: [studyProgramId], references: [id])
-  studyProgramId Int?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id                       Int                       @id @default(autoincrement())
+  name                     String
+  occupation               String
+  nip                      String
+  studyProgram             StudyProgram?             @relation(fields: [studyProgramId], references: [id])
+  studyProgramId           Int?
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  letterSignatureTemplates LetterSignatureTemplate[]
 }
 
 model Student {
-  id             Int          @id @default(autoincrement())
-  user           User         @relation(fields: [userId], references: [id])
-  userId         Int          @unique
-  studyProgram   StudyProgram @relation(fields: [studyProgramId], references: [id])
-  studyProgramId Int
-  fullname       String
-  nim            String       @unique
-  class_year     String
-  address        String
-  phone_number   String?
-  birthday       DateTime?
-  birthplace     String?
-  gender         String
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id                       Int                       @id @default(autoincrement())
+  user                     User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                   Int                       @unique
+  studyProgram             StudyProgram              @relation(fields: [studyProgramId], references: [id])
+  studyProgramId           Int
+  fullname                 String
+  nim                      String                    @unique
+  classYear                String
+  address                  String
+  phoneNumber              String?
+  birthday                 DateTime?
+  birthplace               String?
+  gender                   String
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  studentLetterSubmissions StudentLetterSubmission[]
 }
 
 model Role {
@@ -111,7 +135,7 @@ model RolePermission {
 
 model UserRoles {
   id        Int      @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int
   role      Role     @relation(fields: [roleId], references: [id])
   roleId    Int
@@ -128,4 +152,134 @@ model ActiveToken {
   userId    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Letter {
+  id                   Int            @id @default(autoincrement())
+  user                 User           @relation(fields: [userId], references: [id])
+  userId               Int
+  letterName           String
+  referenceNumber      String
+  expiredDate          Int
+  letterNumberingStart Int
+  category             LetterCategory
+  signatureType        SignatureType
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  letterHeads              LetterHead[]
+  letterTemplates          LetterTemplate[]
+  letterSignatureTemplates LetterSignatureTemplate[]
+  studentLetterSubmissions StudentLetterSubmission[]
+  generalLetterSubmissions GeneralLetterSubmission[]
+  letterDocuments          letterDocument[]
+}
+
+model Header {
+  id             Int          @id @default(autoincrement())
+  studyProgramId Int
+  studyProgram   StudyProgram @relation(fields: [studyProgramId], references: [id])
+  name           String
+  header         String
+  subheader      String
+  address        String
+  logo           String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  letterHeads LetterHead[]
+}
+
+model LetterHead {
+  id        Int      @id @default(autoincrement())
+  headerId  Int
+  header    Header   @relation(fields: [headerId], references: [id], onDelete: Cascade)
+  letterId  Int
+  letter    Letter   @relation(fields: [letterId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LetterTemplate {
+  id        Int      @id @default(autoincrement())
+  letterId  Int
+  letter    Letter   @relation(fields: [letterId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LetterSignatureTemplate {
+  id               Int               @id @default(autoincrement())
+  letterId         Int
+  letter           Letter            @relation(fields: [letterId], references: [id], onDelete: Cascade)
+  officialId       Int
+  official         Official          @relation(fields: [officialId], references: [id], onDelete: Cascade)
+  position         String            @default("right")
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  letterSignatures LetterSignature[]
+}
+
+model StudentLetterSubmission {
+  id                  Int                  @id @default(autoincrement())
+  studentId           Int
+  student             Student              @relation(fields: [studentId], references: [id])
+  letterId            Int
+  letter              Letter               @relation(fields: [letterId], references: [id])
+  letterNumber        String?
+  status              StudentLetterStatus
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  letterSignatures    LetterSignature[]
+  documentSubmissions DocumentSubmission[]
+}
+
+model GeneralLetterSubmission {
+  id               Int               @id @default(autoincrement())
+  userId           Int
+  user             User              @relation(fields: [userId], references: [id])
+  letterId         Int
+  letter           Letter            @relation(fields: [letterId], references: [id])
+  letterNumber     String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  letterSignatures LetterSignature[]
+}
+
+model LetterSignature {
+  id                        Int                     @id @default(autoincrement())
+  studentLetterSubmissionId Int
+  studentLetterSubmission   StudentLetterSubmission @relation(fields: [studentLetterSubmissionId], references: [id], onDelete: Cascade)
+  generalLetterSubmissionId Int
+  generalLetterSubmission   GeneralLetterSubmission @relation(fields: [generalLetterSubmissionId], references: [id], onDelete: Cascade)
+  letterSignatureTemplateId Int
+  letterSignatureTemplate   LetterSignatureTemplate @relation(fields: [letterSignatureTemplateId], references: [id], onDelete: Cascade)
+  signature                 String
+  verifiedAt                DateTime?
+  createdAt                 DateTime                @default(now())
+  updatedAt                 DateTime                @updatedAt
+}
+
+model letterDocument {
+  id                  Int                  @id @default(autoincrement())
+  letterId            Int
+  letter              Letter               @relation(fields: [letterId], references: [id], onDelete: Cascade)
+  docuentName         String
+  filePath            String               @default("pdf")
+  isRequired          Boolean              @default(false)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  documentSubmissions DocumentSubmission[]
+}
+
+model DocumentSubmission {
+  id                        Int                     @id @default(autoincrement())
+  studentLetterSubmissionId Int
+  studentLetterSubmission   StudentLetterSubmission @relation(fields: [studentLetterSubmissionId], references: [id], onDelete: Cascade)
+  letterDocumentId          Int
+  letterDocument            letterDocument          @relation(fields: [letterDocumentId], references: [id])
+  filePath                  String
+  createdAt                 DateTime                @default(now())
+  updatedAt                 DateTime                @updatedAt
 }

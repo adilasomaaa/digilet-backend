@@ -8,14 +8,21 @@ import {
   Delete,
   UseGuards,
   Query,
+  Res,
+  BadRequestException,
+  UseInterceptors,
+  UploadedFile,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { StudentService } from './student.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { ApiResponse } from 'src/common/helpers/api-response.helper';
 import { QueryStudentDto } from './dto/query-student.dto';
+import * as express from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('api/student')
 export class StudentController {
@@ -52,10 +59,7 @@ export class StudentController {
   @Patch(':id')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
-  async update(
-    @Param('id') id: string,
-    @Body() updateDto: UpdateStudentDto,
-  ) {
+  async update(@Param('id') id: string, @Body() updateDto: UpdateStudentDto) {
     await this.studentService.update(+id, updateDto);
     return ApiResponse.success('Student berhasil diubah');
   }
@@ -66,5 +70,55 @@ export class StudentController {
   async remove(@Param('id') id: string) {
     await this.studentService.remove(+id);
     return ApiResponse.success('Student berhasil dihapus');
+  }
+
+  @Get('export/excel')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('JWT-auth')
+  async export(@Res() res: express.Response) {
+    const buffer: any = await this.studentService.exportToExcel();
+
+    res.set({
+      'Content-Type':
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': 'attachment; filename="data-mahasiswa.xlsx"',
+      'Content-Length': buffer.length,
+    });
+
+    return res.send(buffer);
+  }
+
+  @Post('import')
+  @UseGuards(AuthGuard('jwt'))
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiBearerAuth('JWT-auth')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  async import(
+    @UploadedFile() file: Express.Multer.File,
+    @Query('studyProgramId', ParseIntPipe) studyProgramId: number,
+  ) {
+    if (!file) throw new BadRequestException('File excel harus diunggah');
+    if (!studyProgramId)
+      new BadRequestException('Program studi harus dipilih.');
+
+    const result = await this.studentService.importFromExcel(
+      file.buffer,
+      studyProgramId,
+    );
+    return ApiResponse.successWithData(
+      `${result.total} Data mahasiswa berhasil diimpor`,
+      result,
+    );
   }
 }

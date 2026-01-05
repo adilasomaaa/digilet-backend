@@ -3,6 +3,8 @@ import { Create{{pascalCase name}}Dto } from './dto/create-{{kebabCase name}}.dt
 import { Update{{pascalCase name}}Dto } from './dto/update-{{kebabCase name}}.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Query{{pascalCase name}}Dto } from './dto/query-{{kebabCase name}}.dto';
+import { Prisma } from '@prisma/client';
+
 
 @Injectable()
 export class {{pascalCase name}}Service {
@@ -15,7 +17,13 @@ export class {{pascalCase name}}Service {
   }
 
   async findAll(query: Query{{pascalCase name}}Dto) {
-    const { page = 1, limit = 10 } = query;
+    const { page = 1, limit = 10, search } = query;
+
+    const where: Prisma.{{pascalCase name}}WhereInput = {};
+
+    if (search) {
+      where.OR = [{ name: { contains: search } }];
+    }
 
     const [data, total] = await this.prismaService.$transaction([
       this.prismaService.{{camelCase name}}.findMany({

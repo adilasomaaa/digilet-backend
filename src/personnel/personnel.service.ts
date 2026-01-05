@@ -10,6 +10,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { QueryPersonnelDto } from './dto/query-personnel.dto';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PersonnelService {
@@ -74,13 +75,20 @@ export class PersonnelService {
   }
 
   async findAll(query: QueryPersonnelDto) {
-    const { page, limit } = query;
+    const { page, limit, search } = query;
     const skip = (page - 1) * limit;
+
+    const where: Prisma.PersonnelWhereInput = {};
+
+    if (search) {
+      where.OR = [{ name: { contains: search } }];
+    }
 
     const [data, total] = await this.prismaService.$transaction([
       this.prismaService.personnel.findMany({
         include: { studyProgram: true, user: true },
         skip,
+        where,
         take: limit,
         orderBy: { createdAt: 'asc' },
       }),
@@ -158,8 +166,9 @@ export class PersonnelService {
   }
 
   async remove(id: number) {
-    return await this.prismaService.personnel.delete({
-      where: { id },
+    const personnel = this.findOne(id);
+    return await this.prismaService.user.delete({
+      where: { id: (await personnel).userId },
     });
   }
 }

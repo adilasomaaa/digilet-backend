@@ -88,15 +88,21 @@ export class AuthService {
     if (fullUser) {
       const { password, userRoles, ...result } = fullUser;
 
-      const roles =
-        userRoles.length > 0
-          ? userRoles.map((ur) => ({
-              name: ur.role.name,
-              rolePermissions: ur.role.rolePermissions.map(
-                (rp) => rp.permission.name,
-              ),
-            }))
-          : [];
+      const primaryUserRole =
+        fullUser.userRoles.length > 0 ? fullUser.userRoles[0] : null;
+
+      const primaryRoleName = primaryUserRole
+        ? primaryUserRole.role.name
+        : null;
+
+      const roles = primaryUserRole
+        ? {
+            name: primaryRoleName,
+            rolePermissions: primaryUserRole.role.rolePermissions.map(
+              (rp) => rp.permission.name,
+            ),
+          }
+        : [];
 
       return {
         ...result,

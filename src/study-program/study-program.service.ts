@@ -3,6 +3,7 @@ import { CreateStudyProgramDto } from './dto/create-study-program.dto';
 import { UpdateStudyProgramDto } from './dto/update-study-program.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { QueryStudyProgramDto } from './dto/query-study-program.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class StudyProgramService {
@@ -15,12 +16,19 @@ export class StudyProgramService {
   }
 
   async findAll(query: QueryStudyProgramDto) {
-    const { page, limit } = query;
+    const { page, limit, search } = query;
+
+    const where: Prisma.StudyProgramWhereInput = {};
+
+    if (search) {
+      where.OR = [{ name: { contains: search } }];
+    }
 
     const [data, total] = await this.prismaService.$transaction([
       this.prismaService.studyProgram.findMany({
         skip: (page - 1) * limit,
         take: limit,
+        where,
         orderBy: { createdAt: 'asc' },
       }),
       this.prismaService.studyProgram.count(),

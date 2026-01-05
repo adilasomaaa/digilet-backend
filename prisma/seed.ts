@@ -108,15 +108,12 @@ async function main() {
       create: { name: roleName },
     });
 
-    // Ambil daftar permission untuk role ini
     const permissionsForRole = rolesAndPermissions[roleName];
     if (permissionsForRole) {
-      // Dapatkan objek Permission dari database berdasarkan namanya
       const permissionsInDb = await prisma.permission.findMany({
         where: { name: { in: permissionsForRole } },
       });
 
-      // Hubungkan setiap permission ke role
       for (const perm of permissionsInDb) {
         await prisma.rolePermission.upsert({
           where: {

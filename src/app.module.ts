@@ -10,6 +10,7 @@ import { StudyProgramModule } from './study-program/study-program.module';
 import { PersonnelModule } from './personnel/personnel.module';
 import { StudentModule } from './student/student.module';
 import { OfficialModule } from './official/official.module';
+import { LetterModule } from './letter/letter.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { OfficialModule } from './official/official.module';
     PersonnelModule,
     StudentModule,
     OfficialModule,
+    LetterModule,
   ],
   providers: [
     FileUploadService,

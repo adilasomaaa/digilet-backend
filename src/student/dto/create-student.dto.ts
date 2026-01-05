@@ -36,14 +36,14 @@ export class CreateStudentDto {
   @ApiProperty({ example: '2021', description: 'Class year' })
   @IsNotEmpty({ message: 'Tahun angkatan tidak boleh kosong' })
   @IsString({ message: 'Tahun angkatan harus berupa teks' })
-  class_year: string;
+  classYear: string;
 
   @ApiProperty({
     example: '081234567890',
     description: 'Handphone number',
     required: false,
   })
-  phone_number?: string;
+  phoneNumber?: string;
 
   @ApiProperty({
     example: '2000-01-01',
