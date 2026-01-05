@@ -25,6 +25,7 @@ export class LetterTemplateService {
         take: Number(limit),
         where,
         orderBy: { createdAt: 'asc' },
+        include: { letter: true },
       }),
       this.prismaService.letterTemplate.count({ where }),
     ]);
@@ -39,9 +40,29 @@ export class LetterTemplateService {
     };
   }
 
+  async upsert(createDto: CreateLetterTemplateDto) {
+    const existingData = await this.prismaService.letterTemplate.findFirst({
+      where: { letterId: createDto.letterId },
+    });
+    if (!existingData) {
+      await this.prismaService.letterTemplate.create({
+        data: createDto,
+      });
+
+      return 'Berhasil membuat template surat';
+    }
+    await this.prismaService.letterTemplate.update({
+      where: { id: existingData.id },
+      data: createDto,
+    });
+
+    return 'Berhasil memperbarui template surat';
+  }
+
   async findOne(id: number) {
     const data = await this.prismaService.letterTemplate.findUnique({
       where: { id },
+      include: { letter: true },
     });
     if (!data) throw new NotFoundException('LetterTemplate tidak ditemukan');
     return data;

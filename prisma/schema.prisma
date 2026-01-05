@@ -172,7 +172,7 @@ model Letter {
   letterSignatureTemplates LetterSignatureTemplate[]
   studentLetterSubmissions StudentLetterSubmission[]
   generalLetterSubmissions GeneralLetterSubmission[]
-  letterDocuments          letterDocument[]
+  letterDocuments          LetterDocument[]
 }
 
 model Header {
@@ -216,6 +216,7 @@ model LetterSignatureTemplate {
   officialId       Int
   official         Official          @relation(fields: [officialId], references: [id], onDelete: Cascade)
   position         String            @default("right")
+  token            String?
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   letterSignatures LetterSignature[]
@@ -261,7 +262,7 @@ model LetterSignature {
   updatedAt                 DateTime                 @updatedAt
 }
 
-model letterDocument {
+model LetterDocument {
   id                  Int                  @id @default(autoincrement())
   letterId            Int
   letter              Letter               @relation(fields: [letterId], references: [id], onDelete: Cascade)
@@ -278,7 +279,7 @@ model DocumentSubmission {
   studentLetterSubmissionId Int
   studentLetterSubmission   StudentLetterSubmission @relation(fields: [studentLetterSubmissionId], references: [id], onDelete: Cascade)
   letterDocumentId          Int
-  letterDocument            letterDocument          @relation(fields: [letterDocumentId], references: [id])
+  letterDocument            LetterDocument          @relation(fields: [letterDocumentId], references: [id])
   filePath                  String
   createdAt                 DateTime                @default(now())
   updatedAt                 DateTime                @updatedAt

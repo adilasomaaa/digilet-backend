@@ -1,0 +1,3418 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Autentikasi"
+        ]
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "operationId": "AuthController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Autentikasi"
+        ]
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Autentikasi"
+        ]
+      }
+    },
+    "/api/auth/change-password": {
+      "post": {
+        "operationId": "AuthController_changePassword",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Autentikasi"
+        ]
+      }
+    },
+    "/api/study-program": {
+      "post": {
+        "operationId": "StudyProgramController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStudyProgramDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "StudyProgram"
+        ]
+      },
+      "get": {
+        "operationId": "StudyProgramController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Nomor halaman yang ingin ditampilkan",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman",
+            "schema": {
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "StudyProgram"
+        ]
+      }
+    },
+    "/api/study-program/{id}": {
+      "get": {
+        "operationId": "StudyProgramController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "StudyProgram"
+        ]
+      },
+      "patch": {
+        "operationId": "StudyProgramController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStudyProgramDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "StudyProgram"
+        ]
+      },
+      "delete": {
+        "operationId": "StudyProgramController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "StudyProgram"
+        ]
+      }
+    },
+    "/api/personnel": {
+      "post": {
+        "operationId": "PersonnelController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePersonnelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Personnel"
+        ]
+      },
+      "get": {
+        "operationId": "PersonnelController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Nomor halaman yang ingin ditampilkan",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman",
+            "schema": {
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Personnel"
+        ]
+      }
+    },
+    "/api/personnel/{id}": {
+      "get": {
+        "operationId": "PersonnelController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Personnel"
+        ]
+      },
+      "patch": {
+        "operationId": "PersonnelController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePersonnelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Personnel"
+        ]
+      },
+      "delete": {
+        "operationId": "PersonnelController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Personnel"
+        ]
+      }
+    },
+    "/api/student": {
+      "post": {
+        "operationId": "StudentController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStudentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Student"
+        ]
+      },
+      "get": {
+        "operationId": "StudentController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Nomor halaman yang ingin ditampilkan",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman",
+            "schema": {
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "studyProgramId",
+            "required": false,
+            "in": "query",
+            "description": "ID Program Studi",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Student"
+        ]
+      }
+    },
+    "/api/student/{id}": {
+      "get": {
+        "operationId": "StudentController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Student"
+        ]
+      },
+      "patch": {
+        "operationId": "StudentController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStudentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Student"
+        ]
+      },
+      "delete": {
+        "operationId": "StudentController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Student"
+        ]
+      }
+    },
+    "/api/student/export/excel": {
+      "get": {
+        "operationId": "StudentController_export",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Student"
+        ]
+      }
+    },
+    "/api/student/import": {
+      "post": {
+        "operationId": "StudentController_import",
+        "parameters": [
+          {
+            "name": "studyProgramId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Student"
+        ]
+      }
+    },
+    "/api/official": {
+      "post": {
+        "operationId": "OfficialController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOfficialDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Official"
+        ]
+      },
+      "get": {
+        "operationId": "OfficialController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Nomor halaman yang ingin ditampilkan",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman",
+            "schema": {
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Official"
+        ]
+      }
+    },
+    "/api/official/{id}": {
+      "get": {
+        "operationId": "OfficialController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Official"
+        ]
+      },
+      "patch": {
+        "operationId": "OfficialController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOfficialDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Official"
+        ]
+      },
+      "delete": {
+        "operationId": "OfficialController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Official"
+        ]
+      }
+    },
+    "/api/letter": {
+      "post": {
+        "operationId": "LetterController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLetterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Letter"
+        ]
+      },
+      "get": {
+        "operationId": "LetterController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Nomor halaman yang ingin ditampilkan",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman",
+            "schema": {
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "programStudyId",
+            "required": false,
+            "in": "query",
+            "description": "ID Program Studi",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "category",
+            "required": true,
+            "in": "query",
+            "description": "kategori surat",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fakultas",
+                "jurusan",
+                "universitas",
+                "all"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Letter"
+        ]
+      }
+    },
+    "/api/letter/{id}": {
+      "get": {
+        "operationId": "LetterController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Letter"
+        ]
+      },
+      "patch": {
+        "operationId": "LetterController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLetterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Letter"
+        ]
+      },
+      "delete": {
+        "operationId": "LetterController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Letter"
+        ]
+      }
+    },
+    "/api/header": {
+      "post": {
+        "operationId": "HeaderController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHeaderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Header"
+        ]
+      },
+      "get": {
+        "operationId": "HeaderController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Nomor halaman yang ingin ditampilkan",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman",
+            "schema": {
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "studyProgramId",
+            "required": false,
+            "in": "query",
+            "description": "ID Program Studi",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Header"
+        ]
+      }
+    },
+    "/api/header/{id}": {
+      "get": {
+        "operationId": "HeaderController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Header"
+        ]
+      },
+      "patch": {
+        "operationId": "HeaderController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHeaderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Header"
+        ]
+      },
+      "delete": {
+        "operationId": "HeaderController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Header"
+        ]
+      }
+    },
+    "/api/letterhead": {
+      "post": {
+        "operationId": "LetterheadController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLetterheadDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Letterhead"
+        ]
+      },
+      "get": {
+        "operationId": "LetterheadController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Nomor halaman yang ingin ditampilkan",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman",
+            "schema": {
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "letterId",
+            "required": false,
+            "in": "query",
+            "description": "ID surat",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "headerId",
+            "required": false,
+            "in": "query",
+            "description": "ID header",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Letterhead"
+        ]
+      }
+    },
+    "/api/letterhead/{id}": {
+      "get": {
+        "operationId": "LetterheadController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Letterhead"
+        ]
+      },
+      "patch": {
+        "operationId": "LetterheadController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLetterheadDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Letterhead"
+        ]
+      },
+      "delete": {
+        "operationId": "LetterheadController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "Letterhead"
+        ]
+      }
+    },
+    "/api/letter-template": {
+      "post": {
+        "operationId": "LetterTemplateController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLetterTemplateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterTemplate"
+        ]
+      },
+      "get": {
+        "operationId": "LetterTemplateController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Nomor halaman yang ingin ditampilkan",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman",
+            "schema": {
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterTemplate"
+        ]
+      }
+    },
+    "/api/letter-template/upsert": {
+      "post": {
+        "operationId": "LetterTemplateController_upsert",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLetterTemplateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterTemplate"
+        ]
+      }
+    },
+    "/api/letter-template/{id}": {
+      "get": {
+        "operationId": "LetterTemplateController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterTemplate"
+        ]
+      },
+      "patch": {
+        "operationId": "LetterTemplateController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLetterTemplateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterTemplate"
+        ]
+      },
+      "delete": {
+        "operationId": "LetterTemplateController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterTemplate"
+        ]
+      }
+    },
+    "/api/letter-signature-template": {
+      "post": {
+        "operationId": "LetterSignatureTemplateController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLetterSignatureTemplateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterSignatureTemplate"
+        ]
+      },
+      "get": {
+        "operationId": "LetterSignatureTemplateController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Nomor halaman yang ingin ditampilkan",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman",
+            "schema": {
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "letterId",
+            "required": false,
+            "in": "query",
+            "description": "ID surat",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "officialId",
+            "required": false,
+            "in": "query",
+            "description": "ID pejabat",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterSignatureTemplate"
+        ]
+      }
+    },
+    "/api/letter-signature-template/{id}": {
+      "get": {
+        "operationId": "LetterSignatureTemplateController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterSignatureTemplate"
+        ]
+      },
+      "patch": {
+        "operationId": "LetterSignatureTemplateController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLetterSignatureTemplateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterSignatureTemplate"
+        ]
+      },
+      "delete": {
+        "operationId": "LetterSignatureTemplateController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterSignatureTemplate"
+        ]
+      }
+    },
+    "/api/letter-document": {
+      "post": {
+        "operationId": "LetterDocumentController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLetterDocumentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterDocument"
+        ]
+      },
+      "get": {
+        "operationId": "LetterDocumentController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Nomor halaman yang ingin ditampilkan",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman",
+            "schema": {
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "letterId",
+            "required": true,
+            "in": "query",
+            "description": "ID surat",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterDocument"
+        ]
+      }
+    },
+    "/api/letter-document/{id}": {
+      "get": {
+        "operationId": "LetterDocumentController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterDocument"
+        ]
+      },
+      "patch": {
+        "operationId": "LetterDocumentController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLetterDocumentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterDocument"
+        ]
+      },
+      "delete": {
+        "operationId": "LetterDocumentController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterDocument"
+        ]
+      }
+    },
+    "/api/letter-signature": {
+      "post": {
+        "operationId": "LetterSignatureController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLetterSignatureDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "LetterSignature"
+        ]
+      },
+      "get": {
+        "operationId": "LetterSignatureController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Nomor halaman yang ingin ditampilkan",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman",
+            "schema": {
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterSignature"
+        ]
+      }
+    },
+    "/api/letter-signature/{id}": {
+      "get": {
+        "operationId": "LetterSignatureController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterSignature"
+        ]
+      },
+      "patch": {
+        "operationId": "LetterSignatureController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLetterSignatureDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterSignature"
+        ]
+      },
+      "delete": {
+        "operationId": "LetterSignatureController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterSignature"
+        ]
+      }
+    },
+    "/api/student-letter-submission": {
+      "post": {
+        "operationId": "StudentLetterSubmissionController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStudentLetterSubmissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "StudentLetterSubmission"
+        ]
+      },
+      "get": {
+        "operationId": "StudentLetterSubmissionController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Nomor halaman yang ingin ditampilkan",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman",
+            "schema": {
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "StudentLetterSubmission"
+        ]
+      }
+    },
+    "/api/student-letter-submission/{id}/print": {
+      "get": {
+        "operationId": "StudentLetterSubmissionController_print",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "StudentLetterSubmission"
+        ]
+      }
+    },
+    "/api/student-letter-submission/{id}": {
+      "get": {
+        "operationId": "StudentLetterSubmissionController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "StudentLetterSubmission"
+        ]
+      },
+      "patch": {
+        "operationId": "StudentLetterSubmissionController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStudentLetterSubmissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "StudentLetterSubmission"
+        ]
+      },
+      "delete": {
+        "operationId": "StudentLetterSubmissionController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "StudentLetterSubmission"
+        ]
+      }
+    },
+    "/api/general-letter-submission": {
+      "post": {
+        "operationId": "GeneralLetterSubmissionController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGeneralLetterSubmissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "GeneralLetterSubmission"
+        ]
+      },
+      "get": {
+        "operationId": "GeneralLetterSubmissionController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Nomor halaman yang ingin ditampilkan",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman",
+            "schema": {
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "GeneralLetterSubmission"
+        ]
+      }
+    },
+    "/api/general-letter-submission/{id}/print": {
+      "get": {
+        "operationId": "GeneralLetterSubmissionController_print",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "GeneralLetterSubmission"
+        ]
+      }
+    },
+    "/api/general-letter-submission/{id}": {
+      "get": {
+        "operationId": "GeneralLetterSubmissionController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "GeneralLetterSubmission"
+        ]
+      },
+      "patch": {
+        "operationId": "GeneralLetterSubmissionController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGeneralLetterSubmissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "GeneralLetterSubmission"
+        ]
+      },
+      "delete": {
+        "operationId": "GeneralLetterSubmissionController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "GeneralLetterSubmission"
+        ]
+      }
+    },
+    "/api/document-submission": {
+      "post": {
+        "operationId": "DocumentSubmissionController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "studentLetterSubmissionId": {
+                    "type": "number"
+                  },
+                  "letterDocumentId": {
+                    "type": "number"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "DocumentSubmission"
+        ]
+      },
+      "get": {
+        "operationId": "DocumentSubmissionController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Nomor halaman yang ingin ditampilkan",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman",
+            "schema": {
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "DocumentSubmission"
+        ]
+      }
+    },
+    "/api/document-submission/{id}": {
+      "get": {
+        "operationId": "DocumentSubmissionController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "DocumentSubmission"
+        ]
+      },
+      "patch": {
+        "operationId": "DocumentSubmissionController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "studentLetterSubmissionId": {
+                    "type": "number"
+                  },
+                  "letterDocumentId": {
+                    "type": "number"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "DocumentSubmission"
+        ]
+      },
+      "delete": {
+        "operationId": "DocumentSubmissionController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "DocumentSubmission"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "DIGILET",
+    "description": "Dokumentasi API",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "JWT-auth": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "name": "JWT",
+        "description": "Enter JWT token",
+        "in": "header"
+      }
+    },
+    "schemas": {
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "admin@example.com",
+            "description": "email"
+          },
+          "password": {
+            "type": "string",
+            "example": "password123",
+            "description": "password"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "CreateStudyProgramDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Teknik Informatika",
+            "description": "Nama program studi"
+          },
+          "address": {
+            "type": "string",
+            "example": "Teknik Informatika",
+            "description": "Alamat program studi"
+          }
+        },
+        "required": [
+          "name",
+          "address"
+        ]
+      },
+      "UpdateStudyProgramDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Teknik Informatika",
+            "description": "Nama program studi"
+          },
+          "address": {
+            "type": "string",
+            "example": "Teknik Informatika",
+            "description": "Alamat program studi"
+          }
+        }
+      },
+      "CreatePersonnelDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "John Doe",
+            "description": "name of personnel"
+          },
+          "email": {
+            "type": "string",
+            "example": "admin@example.com",
+            "description": "email"
+          },
+          "position": {
+            "type": "string",
+            "example": "Operator",
+            "description": "position of personnel"
+          },
+          "studyProgramId": {
+            "type": "number",
+            "example": 1,
+            "description": "ID program studi",
+            "nullable": true
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "position"
+        ]
+      },
+      "UpdatePersonnelDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "John Doe",
+            "description": "name of personnel"
+          },
+          "email": {
+            "type": "string",
+            "example": "admin@example.com",
+            "description": "email"
+          },
+          "position": {
+            "type": "string",
+            "example": "Operator",
+            "description": "position of personnel"
+          },
+          "studyProgramId": {
+            "type": "number",
+            "example": 1,
+            "description": "ID program studi",
+            "nullable": true
+          }
+        }
+      },
+      "CreateStudentDto": {
+        "type": "object",
+        "properties": {
+          "fullname": {
+            "type": "string",
+            "example": "John Doe",
+            "description": "Full name"
+          },
+          "studyProgramId": {
+            "type": "number",
+            "example": 1,
+            "description": "Study program ID"
+          },
+          "email": {
+            "type": "string",
+            "example": "admin@example.com",
+            "description": "email"
+          },
+          "address": {
+            "type": "string",
+            "example": "Jl. Merdeka No. 123",
+            "description": "Address"
+          },
+          "nim": {
+            "type": "string",
+            "example": "1234567890",
+            "description": "NIM"
+          },
+          "classYear": {
+            "type": "string",
+            "example": "2021",
+            "description": "Class year"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "081234567890",
+            "description": "Handphone number"
+          },
+          "birthday": {
+            "type": "string",
+            "example": "2000-01-01",
+            "description": "Birthday"
+          },
+          "birthplace": {
+            "type": "string",
+            "example": "Jakarta",
+            "description": "Birthplace"
+          },
+          "gender": {
+            "type": "string",
+            "example": "Laki-laki/Perempuan",
+            "description": "Gender"
+          }
+        },
+        "required": [
+          "fullname",
+          "studyProgramId",
+          "email",
+          "address",
+          "nim",
+          "classYear",
+          "gender"
+        ]
+      },
+      "UpdateStudentDto": {
+        "type": "object",
+        "properties": {
+          "fullname": {
+            "type": "string",
+            "example": "John Doe",
+            "description": "Full name"
+          },
+          "studyProgramId": {
+            "type": "number",
+            "example": 1,
+            "description": "Study program ID"
+          },
+          "email": {
+            "type": "string",
+            "example": "admin@example.com",
+            "description": "email"
+          },
+          "address": {
+            "type": "string",
+            "example": "Jl. Merdeka No. 123",
+            "description": "Address"
+          },
+          "nim": {
+            "type": "string",
+            "example": "1234567890",
+            "description": "NIM"
+          },
+          "classYear": {
+            "type": "string",
+            "example": "2021",
+            "description": "Class year"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "081234567890",
+            "description": "Handphone number"
+          },
+          "birthday": {
+            "type": "string",
+            "example": "2000-01-01",
+            "description": "Birthday"
+          },
+          "birthplace": {
+            "type": "string",
+            "example": "Jakarta",
+            "description": "Birthplace"
+          },
+          "gender": {
+            "type": "string",
+            "example": "Laki-laki/Perempuan",
+            "description": "Gender"
+          }
+        }
+      },
+      "CreateOfficialDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "John Doe",
+            "description": "Nama resmi"
+          },
+          "nip": {
+            "type": "string",
+            "example": "123456789",
+            "description": "Nomor identitas"
+          },
+          "occupation": {
+            "type": "string",
+            "example": "Dekan",
+            "description": "Jabatan"
+          },
+          "studyProgramId": {
+            "type": "number",
+            "example": 1,
+            "description": "study pogram Id",
+            "nullable": true
+          }
+        },
+        "required": [
+          "name",
+          "nip",
+          "occupation"
+        ]
+      },
+      "UpdateOfficialDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "John Doe",
+            "description": "Nama resmi"
+          },
+          "nip": {
+            "type": "string",
+            "example": "123456789",
+            "description": "Nomor identitas"
+          },
+          "occupation": {
+            "type": "string",
+            "example": "Dekan",
+            "description": "Jabatan"
+          },
+          "studyProgramId": {
+            "type": "number",
+            "example": 1,
+            "description": "study pogram Id",
+            "nullable": true
+          }
+        }
+      },
+      "CreateLetterDto": {
+        "type": "object",
+        "properties": {
+          "letterName": {
+            "type": "string",
+            "example": "Surat Pengantar",
+            "description": "nama surat"
+          },
+          "referenceNumber": {
+            "type": "string",
+            "example": "123/456/789",
+            "description": "nomor surat"
+          },
+          "expiredDate": {
+            "type": "number",
+            "example": "2023-09-10",
+            "description": "tanggal kedaluwarsa"
+          },
+          "letterNumberingStart": {
+            "type": "number",
+            "example": 1,
+            "description": "nomor urut surat"
+          },
+          "category": {
+            "type": "string",
+            "description": "kategori surat",
+            "enum": [
+              "faculty",
+              "study_program",
+              "university",
+              "all"
+            ]
+          },
+          "signatureType": {
+            "type": "string",
+            "description": "jenis tanda tangan",
+            "enum": [
+              "barcode",
+              "digital"
+            ]
+          }
+        },
+        "required": [
+          "letterName",
+          "referenceNumber",
+          "expiredDate",
+          "letterNumberingStart",
+          "category",
+          "signatureType"
+        ]
+      },
+      "UpdateLetterDto": {
+        "type": "object",
+        "properties": {
+          "letterName": {
+            "type": "string",
+            "example": "Surat Pengantar",
+            "description": "nama surat"
+          },
+          "referenceNumber": {
+            "type": "string",
+            "example": "123/456/789",
+            "description": "nomor surat"
+          },
+          "expiredDate": {
+            "type": "number",
+            "example": "2023-09-10",
+            "description": "tanggal kedaluwarsa"
+          },
+          "letterNumberingStart": {
+            "type": "number",
+            "example": 1,
+            "description": "nomor urut surat"
+          },
+          "category": {
+            "type": "string",
+            "description": "kategori surat",
+            "enum": [
+              "faculty",
+              "study_program",
+              "university",
+              "all"
+            ]
+          },
+          "signatureType": {
+            "type": "string",
+            "description": "jenis tanda tangan",
+            "enum": [
+              "barcode",
+              "digital"
+            ]
+          }
+        }
+      },
+      "CreateHeaderDto": {
+        "type": "object",
+        "properties": {
+          "studyProgramId": {
+            "type": "number",
+            "example": 1,
+            "description": "study pogram Id",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "example": "Header Name",
+            "description": "Header Name"
+          },
+          "header": {
+            "type": "string",
+            "example": "Main Header",
+            "description": "Header"
+          },
+          "subheader": {
+            "type": "string",
+            "example": "Sub Header",
+            "description": "Sub Header"
+          },
+          "address": {
+            "type": "string",
+            "example": "Jl. Merdeka No. 123",
+            "description": "Address"
+          },
+          "logo": {
+            "type": "string",
+            "example": "http://example.com/image.jpg",
+            "description": "Logo URL"
+          }
+        },
+        "required": [
+          "name",
+          "header",
+          "subheader",
+          "address",
+          "logo"
+        ]
+      },
+      "UpdateHeaderDto": {
+        "type": "object",
+        "properties": {
+          "studyProgramId": {
+            "type": "number",
+            "example": 1,
+            "description": "study pogram Id",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "example": "Header Name",
+            "description": "Header Name"
+          },
+          "header": {
+            "type": "string",
+            "example": "Main Header",
+            "description": "Header"
+          },
+          "subheader": {
+            "type": "string",
+            "example": "Sub Header",
+            "description": "Sub Header"
+          },
+          "address": {
+            "type": "string",
+            "example": "Jl. Merdeka No. 123",
+            "description": "Address"
+          },
+          "logo": {
+            "type": "string",
+            "example": "http://example.com/image.jpg",
+            "description": "Logo URL"
+          }
+        }
+      },
+      "CreateLetterheadDto": {
+        "type": "object",
+        "properties": {
+          "letterId": {
+            "type": "number",
+            "example": 1,
+            "description": "ID surat"
+          },
+          "headerId": {
+            "type": "number",
+            "example": 1,
+            "description": "ID header"
+          }
+        },
+        "required": [
+          "letterId",
+          "headerId"
+        ]
+      },
+      "UpdateLetterheadDto": {
+        "type": "object",
+        "properties": {
+          "letterId": {
+            "type": "number",
+            "example": 1,
+            "description": "ID surat"
+          },
+          "headerId": {
+            "type": "number",
+            "example": 1,
+            "description": "ID header"
+          }
+        }
+      },
+      "CreateLetterTemplateDto": {
+        "type": "object",
+        "properties": {
+          "letterId": {
+            "type": "number",
+            "example": 1,
+            "description": "ID surat"
+          },
+          "content": {
+            "type": "string",
+            "example": "content",
+            "description": "Content"
+          }
+        },
+        "required": [
+          "letterId",
+          "content"
+        ]
+      },
+      "UpdateLetterTemplateDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateLetterSignatureTemplateDto": {
+        "type": "object",
+        "properties": {
+          "letterId": {
+            "type": "number",
+            "example": 1,
+            "description": "ID surat"
+          },
+          "officialId": {
+            "type": "number",
+            "example": 1,
+            "description": "ID pejabat"
+          },
+          "position": {
+            "type": "string",
+            "example": "atas kiri",
+            "description": "Posisi tanda tangan"
+          }
+        },
+        "required": [
+          "letterId",
+          "officialId"
+        ]
+      },
+      "UpdateLetterSignatureTemplateDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateLetterDocumentDto": {
+        "type": "object",
+        "properties": {
+          "letterId": {
+            "type": "number",
+            "example": 1,
+            "description": "ID surat"
+          },
+          "documentName": {
+            "type": "string",
+            "example": "Surat Pengantar",
+            "description": "Nama surat"
+          },
+          "fileType": {
+            "type": "string",
+            "example": "pdf",
+            "description": "Tipe file"
+          },
+          "isRequired": {
+            "type": "boolean",
+            "example": true,
+            "description": "Surat Pengantar"
+          }
+        },
+        "required": [
+          "letterId",
+          "documentName",
+          "fileType",
+          "isRequired"
+        ]
+      },
+      "UpdateLetterDocumentDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateLetterSignatureDto": {
+        "type": "object",
+        "properties": {
+          "studentLetterSubmissionId": {
+            "type": "number",
+            "description": "ID dari student letter submission"
+          },
+          "generalLetterSubmissionId": {
+            "type": "number",
+            "description": "ID dari general letter submission"
+          },
+          "letterSignatureTemplateId": {
+            "type": "number",
+            "description": "ID dari letter signature template"
+          },
+          "signature": {
+            "type": "string",
+            "description": "Signature (string)"
+          }
+        },
+        "required": [
+          "letterSignatureTemplateId",
+          "signature"
+        ]
+      },
+      "UpdateLetterSignatureDto": {
+        "type": "object",
+        "properties": {
+          "studentLetterSubmissionId": {
+            "type": "number",
+            "description": "ID dari student letter submission"
+          },
+          "generalLetterSubmissionId": {
+            "type": "number",
+            "description": "ID dari general letter submission"
+          },
+          "letterSignatureTemplateId": {
+            "type": "number",
+            "description": "ID dari letter signature template"
+          },
+          "signature": {
+            "type": "string",
+            "description": "Signature (string)"
+          }
+        }
+      },
+      "CreateStudentLetterSubmissionDto": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "number",
+            "description": "ID dari student"
+          },
+          "letterId": {
+            "type": "number",
+            "description": "ID dari letter"
+          },
+          "letterNumber": {
+            "type": "string",
+            "description": "Nomor surat"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status surat",
+            "enum": [
+              "pending",
+              "waiting_signature",
+              "approved",
+              "rejected"
+            ],
+            "default": "pending"
+          }
+        },
+        "required": [
+          "studentId",
+          "letterId",
+          "status"
+        ]
+      },
+      "UpdateStudentLetterSubmissionDto": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "number",
+            "description": "ID dari student"
+          },
+          "letterId": {
+            "type": "number",
+            "description": "ID dari letter"
+          },
+          "letterNumber": {
+            "type": "string",
+            "description": "Nomor surat"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status surat",
+            "enum": [
+              "pending",
+              "waiting_signature",
+              "approved",
+              "rejected"
+            ],
+            "default": "pending"
+          }
+        }
+      },
+      "CreateGeneralLetterSubmissionDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "number",
+            "description": "ID dari user"
+          },
+          "letterId": {
+            "type": "number",
+            "description": "ID dari letter"
+          },
+          "letterNumber": {
+            "type": "string",
+            "description": "Nomor surat"
+          }
+        },
+        "required": [
+          "userId",
+          "letterId"
+        ]
+      },
+      "UpdateGeneralLetterSubmissionDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "number",
+            "description": "ID dari user"
+          },
+          "letterId": {
+            "type": "number",
+            "description": "ID dari letter"
+          },
+          "letterNumber": {
+            "type": "string",
+            "description": "Nomor surat"
+          }
+        }
+      }
+    }
+  }
+}

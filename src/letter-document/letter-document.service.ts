@@ -17,7 +17,7 @@ export class LetterDocumentService {
 
   async findAll(query: QueryLetterDocumentDto) {
     const { letterId, page = 1, limit = 10 } = query;
-    const where: Prisma.letterDocumentWhereInput = {};
+    const where: Prisma.LetterDocumentWhereInput = {};
     if (letterId) where.letterId = letterId;
     const [data, total] = await this.prismaService.$transaction([
       this.prismaService.letterDocument.findMany({
@@ -25,6 +25,7 @@ export class LetterDocumentService {
         take: Number(limit),
         where,
         orderBy: { createdAt: 'asc' },
+        include: { letter: true },
       }),
       this.prismaService.letterDocument.count({ where }),
     ]);
@@ -42,6 +43,7 @@ export class LetterDocumentService {
   async findOne(id: number) {
     const data = await this.prismaService.letterDocument.findUnique({
       where: { id },
+      include: { letter: true },
     });
     if (!data) throw new NotFoundException('LetterDocument tidak ditemukan');
     return data;

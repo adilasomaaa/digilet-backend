@@ -4,14 +4,19 @@ import { UpdateLetterSignatureTemplateDto } from './dto/update-letter-signature-
 import { PrismaService } from 'src/prisma/prisma.service';
 import { QueryLetterSignatureTemplateDto } from './dto/query-letter-signature-template.dto';
 import { Prisma } from '@prisma/client';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class LetterSignatureTemplateService {
   constructor(private prismaService: PrismaService) {}
 
   async create(createDto: CreateLetterSignatureTemplateDto) {
+    const token = randomUUID();
     return await this.prismaService.letterSignatureTemplate.create({
-      data: createDto,
+      data: {
+        ...createDto,
+        token,
+      },
     });
   }
 
@@ -26,6 +31,10 @@ export class LetterSignatureTemplateService {
         take: Number(limit),
         where,
         orderBy: { createdAt: 'asc' },
+        include: {
+          official: true,
+          letter: true,
+        },
       }),
       this.prismaService.letterSignatureTemplate.count({ where }),
     ]);
@@ -43,6 +52,10 @@ export class LetterSignatureTemplateService {
   async findOne(id: number) {
     const data = await this.prismaService.letterSignatureTemplate.findUnique({
       where: { id },
+      include: {
+        official: true,
+        letter: true,
+      },
     });
     if (!data)
       throw new NotFoundException('LetterSignatureTemplate tidak ditemukan');

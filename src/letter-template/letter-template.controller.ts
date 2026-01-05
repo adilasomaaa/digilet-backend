@@ -29,6 +29,14 @@ export class LetterTemplateController {
     return ApiResponse.success('Letter Template berhasil dibuat');
   }
 
+  @Post('upsert')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('JWT-auth')
+  async upsert(@Body() createDto: CreateLetterTemplateDto) {
+    const message = await this.letterTemplateService.upsert(createDto);
+    return ApiResponse.success(message);
+  }
+
   @Get()
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
