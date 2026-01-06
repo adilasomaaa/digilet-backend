@@ -18,7 +18,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { ApiResponse } from 'src/common/helpers/api-response.helper';
 import { QueryGeneralLetterSubmissionDto } from './dto/query-general-letter-submission.dto';
-import { Response, Request } from 'express';
+import type { Response, Request } from 'express';
 
 @Controller('api/general-letter-submission')
 export class GeneralLetterSubmissionController {
@@ -49,11 +49,23 @@ export class GeneralLetterSubmissionController {
   @Get(':id/print')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
-  async print(@Param('id') id: string, @Req() req: any, @Res() res: any) {
+  async print(@Param('id') id: string, @Req() req: Request, @Res() res: Response) {
     const baseUrl = `${req.protocol}://${req.get('host')}`;
     const html = await this.generalLetterSubmissionService.printLetter(+id, baseUrl);
     res.setHeader('Content-Type', 'text/html');
     return res.send(html);
+  }
+
+  @Get(':id/print-pdf')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('JWT-auth')
+  async printPdf(@Param('id') id: string, @Req() req: Request, @Res() res: Response) {
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const pdfBuffer = await this.generalLetterSubmissionService.printLetterPdf(+id, baseUrl);
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="surat-${id}.pdf"`);
+    return res.send(pdfBuffer);
   }
 
   @Get(':id')

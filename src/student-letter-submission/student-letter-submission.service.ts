@@ -212,4 +212,90 @@ export class StudentLetterSubmissionService {
       baseUrl,
     );
   }
+
+  async printLetterPdf(id: number, baseUrl: string = 'http://localhost:3000'): Promise<Buffer> {
+    const submission = await this.prismaService.studentLetterSubmission.findUnique({
+      where: { id },
+      include: {
+        student: {
+          include: {
+            user: true,
+            studyProgram: true,
+          },
+        },
+        letter: {
+          include: {
+            letterHeads: {
+              include: {
+                header: true,
+              },
+            },
+            letterTemplates: true,
+          },
+        },
+        letterSignatures: {
+          include: {
+            letterSignatureTemplate: {
+              include: {
+                official: true,
+              },
+            },
+          },
+          orderBy: {
+            letterSignatureTemplate: {
+              position: 'asc',
+            },
+          },
+        },
+      },
+    });
+
+    if (!submission) {
+      throw new NotFoundException('Student letter submission tidak ditemukan');
+    }
+
+    // Get letterhead (header)
+    const letterhead = submission.letter.letterHeads[0]?.header;
+    const letterTemplate = submission.letter.letterTemplates[0];
+
+    if (!letterTemplate) {
+      throw new NotFoundException('Letter template tidak ditemukan');
+    }
+
+    // Prepare recipient info
+    const recipientInfo: string[] = [];
+    recipientInfo.push(submission.student.nim);
+    if (submission.student.studyProgram) {
+      recipientInfo.push(submission.student.studyProgram.name);
+    }
+
+    // Prepare signatures data
+    const signatures = submission.letterSignatures.map((sig) => ({
+      signature: sig.signature,
+      officialName: sig.letterSignatureTemplate.official.name,
+      officialPosition: sig.letterSignatureTemplate.official.occupation,
+      officialNip: sig.letterSignatureTemplate.official.nip,
+      position: sig.letterSignatureTemplate.position || 'right',
+    }));
+
+    // Generate PDF using template service
+    return this.letterTemplateService.generatePdf(
+      {
+        letterNumber: submission.letterNumber || undefined,
+        recipientName: submission.student.fullname,
+        recipientInfo,
+        letterContent: letterTemplate.content,
+        letterhead: letterhead
+          ? {
+              logo: letterhead.logo,
+              header: letterhead.header,
+              subheader: letterhead.subheader || undefined,
+              address: letterhead.address || undefined,
+            }
+          : undefined,
+        signatures,
+      },
+      baseUrl,
+    );
+  }
 }

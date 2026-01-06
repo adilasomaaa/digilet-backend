@@ -2194,6 +2194,34 @@
         ]
       }
     },
+    "/api/student-letter-submission/{id}/print-pdf": {
+      "get": {
+        "operationId": "StudentLetterSubmissionController_printPdf",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "StudentLetterSubmission"
+        ]
+      }
+    },
     "/api/student-letter-submission/{id}": {
       "get": {
         "operationId": "StudentLetterSubmissionController_findOne",
@@ -2363,6 +2391,34 @@
     "/api/general-letter-submission/{id}/print": {
       "get": {
         "operationId": "GeneralLetterSubmissionController_print",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "GeneralLetterSubmission"
+        ]
+      }
+    },
+    "/api/general-letter-submission/{id}/print-pdf": {
+      "get": {
+        "operationId": "GeneralLetterSubmissionController_printPdf",
         "parameters": [
           {
             "name": "id",

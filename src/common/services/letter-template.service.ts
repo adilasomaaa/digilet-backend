@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import puppeteer from 'puppeteer';
 
 interface LetterPrintData {
   letterNumber?: string;
@@ -210,6 +211,35 @@ export class LetterTemplateService {
   private getImageTag(path: string, baseUrl: string, alt: string): string {
     const imagePath = this.getImagePath(path, baseUrl);
     return `<img src="${imagePath}" alt="${alt}" />`;
+  }
+
+  async generatePdf(data: LetterPrintData, baseUrl: string): Promise<Buffer> {
+    const html = this.generatePrintHtml(data, baseUrl);
+
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+
+    try {
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: 'networkidle0' });
+
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        margin: {
+          top: '2cm',
+          right: '2cm',
+          bottom: '2cm',
+          left: '2cm',
+        },
+        printBackground: true,
+      });
+
+      return Buffer.from(pdfBuffer);
+    } finally {
+      await browser.close();
+    }
   }
 
   private escapeHtml(text: string): string {
