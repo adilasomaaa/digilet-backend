@@ -25,6 +25,8 @@ export class PaginationQueryDto {
 
   @ApiPropertyOptional({
     description: 'Kata kunci untuk pencarian berdasarkan nama atau deskripsi',
+    default: '',
+    required: false,
   })
   @IsOptional()
   @IsString()

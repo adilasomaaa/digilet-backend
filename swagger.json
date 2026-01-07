@@ -139,6 +139,7 @@
             "in": "query",
             "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
             "schema": {
+              "default": "",
               "type": "string"
             }
           }
@@ -305,6 +306,7 @@
             "in": "query",
             "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
             "schema": {
+              "default": "",
               "type": "string"
             }
           }
@@ -471,6 +473,7 @@
             "in": "query",
             "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
             "schema": {
+              "default": "",
               "type": "string"
             }
           },
@@ -710,6 +713,7 @@
             "in": "query",
             "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
             "schema": {
+              "default": "",
               "type": "string"
             }
           }
@@ -876,6 +880,7 @@
             "in": "query",
             "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
             "schema": {
+              "default": "",
               "type": "string"
             }
           },
@@ -1067,6 +1072,7 @@
             "in": "query",
             "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
             "schema": {
+              "default": "",
               "type": "string"
             }
           },
@@ -1243,6 +1249,7 @@
             "in": "query",
             "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
             "schema": {
+              "default": "",
               "type": "string"
             }
           },
@@ -1429,6 +1436,7 @@
             "in": "query",
             "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
             "schema": {
+              "default": "",
               "type": "string"
             }
           }
@@ -1624,6 +1632,7 @@
             "in": "query",
             "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
             "schema": {
+              "default": "",
               "type": "string"
             }
           },
@@ -1810,6 +1819,7 @@
             "in": "query",
             "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
             "schema": {
+              "default": "",
               "type": "string"
             }
           },
@@ -1981,6 +1991,7 @@
             "in": "query",
             "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
             "schema": {
+              "default": "",
               "type": "string"
             }
           }
@@ -2147,6 +2158,7 @@
             "in": "query",
             "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
             "schema": {
+              "default": "",
               "type": "string"
             }
           }
@@ -2369,6 +2381,7 @@
             "in": "query",
             "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
             "schema": {
+              "default": "",
               "type": "string"
             }
           }
@@ -2603,6 +2616,7 @@
             "in": "query",
             "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
             "schema": {
+              "default": "",
               "type": "string"
             }
           }
@@ -2721,6 +2735,385 @@
         ],
         "tags": [
           "DocumentSubmission"
+        ]
+      }
+    },
+    "/api/letter-attribute": {
+      "post": {
+        "operationId": "LetterAttributeController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLetterAttributeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterAttribute"
+        ]
+      },
+      "get": {
+        "operationId": "LetterAttributeController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Nomor halaman yang ingin ditampilkan",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman",
+            "schema": {
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
+            "schema": {
+              "default": "",
+              "type": "string"
+            }
+          },
+          {
+            "name": "letterId",
+            "required": false,
+            "in": "query",
+            "description": "ID dari surat",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "isEditable",
+            "required": false,
+            "in": "query",
+            "description": "Apakah editable",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterAttribute"
+        ]
+      }
+    },
+    "/api/letter-attribute/{id}": {
+      "get": {
+        "operationId": "LetterAttributeController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterAttribute"
+        ]
+      },
+      "patch": {
+        "operationId": "LetterAttributeController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLetterAttributeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterAttribute"
+        ]
+      },
+      "delete": {
+        "operationId": "LetterAttributeController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterAttribute"
+        ]
+      }
+    },
+    "/api/letter-attribute-submission": {
+      "post": {
+        "operationId": "LetterAttributeSubmissionController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLetterAttributeSubmissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterAttributeSubmission"
+        ]
+      },
+      "get": {
+        "operationId": "LetterAttributeSubmissionController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Nomor halaman yang ingin ditampilkan",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman",
+            "schema": {
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci untuk pencarian berdasarkan nama atau deskripsi",
+            "schema": {
+              "default": "",
+              "type": "string"
+            }
+          },
+          {
+            "name": "letterAttributeId",
+            "required": false,
+            "in": "query",
+            "description": "ID dari letter attribute",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "studentLetterSubmissionId",
+            "required": false,
+            "in": "query",
+            "description": "ID dari student letter submission",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "generalLetterSubmissionId",
+            "required": false,
+            "in": "query",
+            "description": "ID dari general letter submission",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterAttributeSubmission"
+        ]
+      }
+    },
+    "/api/letter-attribute-submission/{id}": {
+      "get": {
+        "operationId": "LetterAttributeSubmissionController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterAttributeSubmission"
+        ]
+      },
+      "patch": {
+        "operationId": "LetterAttributeSubmissionController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLetterAttributeSubmissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterAttributeSubmission"
+        ]
+      },
+      "delete": {
+        "operationId": "LetterAttributeSubmissionController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": [
+          "LetterAttributeSubmission"
         ]
       }
     }
@@ -3466,6 +3859,138 @@
           "letterNumber": {
             "type": "string",
             "description": "Nomor surat"
+          }
+        }
+      },
+      "CreateLetterAttributeDto": {
+        "type": "object",
+        "properties": {
+          "letterId": {
+            "type": "number",
+            "description": "ID dari surat"
+          },
+          "attributeName": {
+            "type": "string",
+            "description": "Nama atribut"
+          },
+          "placeholder": {
+            "type": "string",
+            "description": "Placeholder"
+          },
+          "label": {
+            "type": "string",
+            "description": "Label"
+          },
+          "type": {
+            "type": "string",
+            "description": "Tipe"
+          },
+          "isRequired": {
+            "type": "boolean",
+            "description": "Apakah wajib diisi"
+          },
+          "isVisible": {
+            "type": "boolean",
+            "description": "Apakah visible"
+          },
+          "isEditable": {
+            "type": "boolean",
+            "description": "Apakah editable"
+          }
+        },
+        "required": [
+          "letterId",
+          "attributeName",
+          "placeholder",
+          "label",
+          "type",
+          "isRequired",
+          "isVisible",
+          "isEditable"
+        ]
+      },
+      "UpdateLetterAttributeDto": {
+        "type": "object",
+        "properties": {
+          "letterId": {
+            "type": "number",
+            "description": "ID dari surat"
+          },
+          "attributeName": {
+            "type": "string",
+            "description": "Nama atribut"
+          },
+          "placeholder": {
+            "type": "string",
+            "description": "Placeholder"
+          },
+          "label": {
+            "type": "string",
+            "description": "Label"
+          },
+          "type": {
+            "type": "string",
+            "description": "Tipe"
+          },
+          "isRequired": {
+            "type": "boolean",
+            "description": "Apakah wajib diisi"
+          },
+          "isVisible": {
+            "type": "boolean",
+            "description": "Apakah visible"
+          },
+          "isEditable": {
+            "type": "boolean",
+            "description": "Apakah editable"
+          }
+        }
+      },
+      "CreateLetterAttributeSubmissionDto": {
+        "type": "object",
+        "properties": {
+          "letterAttributeId": {
+            "type": "number",
+            "description": "ID dari letter attribute"
+          },
+          "studentLetterSubmissionId": {
+            "type": "number",
+            "description": "ID dari student letter submission"
+          },
+          "generalLetterSubmissionId": {
+            "type": "number",
+            "description": "ID dari general letter submission"
+          },
+          "content": {
+            "type": "string",
+            "description": "Content"
+          }
+        },
+        "required": [
+          "letterAttributeId",
+          "studentLetterSubmissionId",
+          "generalLetterSubmissionId",
+          "content"
+        ]
+      },
+      "UpdateLetterAttributeSubmissionDto": {
+        "type": "object",
+        "properties": {
+          "letterAttributeId": {
+            "type": "number",
+            "description": "ID dari letter attribute"
+          },
+          "studentLetterSubmissionId": {
+            "type": "number",
+            "description": "ID dari student letter submission"
+          },
+          "generalLetterSubmissionId": {
+            "type": "number",
+            "description": "ID dari general letter submission"
+          },
+          "content": {
+            "type": "string",
+            "description": "Content"
           }
         }
       }

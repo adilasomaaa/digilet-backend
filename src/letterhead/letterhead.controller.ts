@@ -29,6 +29,14 @@ export class LetterheadController {
     return ApiResponse.success('Letterhead berhasil dibuat');
   }
 
+  @Post('/upsert')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('JWT-auth')
+  async upsert(@Body() createDto: CreateLetterheadDto) {
+    const response = await this.letterheadService.upsert(createDto);
+    return ApiResponse.success(response);
+  }
+
   @Get()
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')

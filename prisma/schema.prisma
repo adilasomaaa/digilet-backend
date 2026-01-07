@@ -173,6 +173,7 @@ model Letter {
   studentLetterSubmissions StudentLetterSubmission[]
   generalLetterSubmissions GeneralLetterSubmission[]
   letterDocuments          LetterDocument[]
+  letterAttributes         LetterAttribute[]
 }
 
 model Header {
@@ -223,29 +224,31 @@ model LetterSignatureTemplate {
 }
 
 model StudentLetterSubmission {
-  id                  Int                  @id @default(autoincrement())
-  studentId           Int
-  student             Student              @relation(fields: [studentId], references: [id])
-  letterId            Int
-  letter              Letter               @relation(fields: [letterId], references: [id])
-  letterNumber        String?
-  status              StudentLetterStatus
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  letterSignatures    LetterSignature[]
-  documentSubmissions DocumentSubmission[]
+  id                         Int                         @id @default(autoincrement())
+  studentId                  Int
+  student                    Student                     @relation(fields: [studentId], references: [id])
+  letterId                   Int
+  letter                     Letter                      @relation(fields: [letterId], references: [id])
+  letterNumber               String?
+  status                     StudentLetterStatus
+  createdAt                  DateTime                    @default(now())
+  updatedAt                  DateTime                    @updatedAt
+  letterSignatures           LetterSignature[]
+  documentSubmissions        DocumentSubmission[]
+  letterAttributeSubmissions LetterAttributeSubmission[]
 }
 
 model GeneralLetterSubmission {
-  id               Int               @id @default(autoincrement())
-  userId           Int
-  user             User              @relation(fields: [userId], references: [id])
-  letterId         Int
-  letter           Letter            @relation(fields: [letterId], references: [id])
-  letterNumber     String?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  letterSignatures LetterSignature[]
+  id                         Int                         @id @default(autoincrement())
+  userId                     Int
+  user                       User                        @relation(fields: [userId], references: [id])
+  letterId                   Int
+  letter                     Letter                      @relation(fields: [letterId], references: [id])
+  letterNumber               String?
+  createdAt                  DateTime                    @default(now())
+  updatedAt                  DateTime                    @updatedAt
+  letterSignatures           LetterSignature[]
+  letterAttributeSubmissions LetterAttributeSubmission[]
 }
 
 model LetterSignature {
@@ -283,4 +286,33 @@ model DocumentSubmission {
   filePath                  String
   createdAt                 DateTime                @default(now())
   updatedAt                 DateTime                @updatedAt
+}
+
+model LetterAttribute {
+  id                         Int                         @id @default(autoincrement())
+  letterId                   Int
+  letter                     Letter                      @relation(fields: [letterId], references: [id])
+  attributeName              String
+  placeholder                String
+  label                      String
+  type                       String
+  isRequired                 Boolean                     @default(false)
+  isVisible                  Boolean                     @default(true)
+  isEditable                 Boolean                     @default(true)
+  createdAt                  DateTime                    @default(now())
+  updatedAt                  DateTime                    @updatedAt
+  letterAttributeSubmissions LetterAttributeSubmission[]
+}
+
+model LetterAttributeSubmission {
+  id                        Int                      @id @default(autoincrement())
+  letterAttributeId         Int
+  letterAttribute           LetterAttribute          @relation(fields: [letterAttributeId], references: [id])
+  studentLetterSubmissionId Int?
+  studentLetterSubmission   StudentLetterSubmission? @relation(fields: [studentLetterSubmissionId], references: [id])
+  generalLetterSubmissionId Int?
+  generalLetterSubmission   GeneralLetterSubmission? @relation(fields: [generalLetterSubmissionId], references: [id])
+  content                   String
+  createdAt                 DateTime                 @default(now())
+  updatedAt                 DateTime                 @updatedAt
 }

@@ -133,6 +133,11 @@ export class GeneralLetterSubmissionService {
             },
           },
         },
+        letterAttributeSubmissions: {
+          include: {
+            letterAttribute: true,
+          },
+        },
       },
     });
 
@@ -161,6 +166,12 @@ export class GeneralLetterSubmissionService {
       position: sig.letterSignatureTemplate.position || 'right',
     }));
 
+    // Prepare letter attributes data for placeholder replacement
+    const letterAttributes = submission.letterAttributeSubmissions.map((submission) => ({
+      placeholder: submission.letterAttribute.attributeName,
+      content: submission.content,
+    }));
+
     // Generate HTML using template service
     return this.letterTemplateService.generatePrintHtml(
       {
@@ -177,6 +188,8 @@ export class GeneralLetterSubmissionService {
             }
           : undefined,
         signatures,
+        letter: submission.letter,
+        letterAttributes,
       },
       baseUrl,
     );
@@ -211,6 +224,11 @@ export class GeneralLetterSubmissionService {
             },
           },
         },
+        letterAttributeSubmissions: {
+          include: {
+            letterAttribute: true,
+          },
+        },
       },
     });
 
@@ -239,6 +257,12 @@ export class GeneralLetterSubmissionService {
       position: sig.letterSignatureTemplate.position || 'right',
     }));
 
+    // Prepare letter attributes data for placeholder replacement
+    const letterAttributes = submission.letterAttributeSubmissions.map((submission) => ({
+      placeholder: submission.letterAttribute.attributeName,
+      content: submission.content,
+    }));
+
     // Generate PDF using template service
     return this.letterTemplateService.generatePdf(
       {
@@ -255,6 +279,8 @@ export class GeneralLetterSubmissionService {
             }
           : undefined,
         signatures,
+        letter: submission.letter,
+        letterAttributes,
       },
       baseUrl,
     );

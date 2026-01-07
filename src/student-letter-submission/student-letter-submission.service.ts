@@ -161,6 +161,11 @@ export class StudentLetterSubmissionService {
             },
           },
         },
+        letterAttributeSubmissions: {
+          include: {
+            letterAttribute: true,
+          },
+        },
       },
     });
 
@@ -192,6 +197,12 @@ export class StudentLetterSubmissionService {
       position: sig.letterSignatureTemplate.position || 'right',
     }));
 
+    // Prepare letter attributes data for placeholder replacement
+    const letterAttributes = submission.letterAttributeSubmissions.map((submission) => ({
+      placeholder: submission.letterAttribute.attributeName,
+      content: submission.content,
+    }));
+
     // Generate HTML using template service
     return this.letterTemplateService.generatePrintHtml(
       {
@@ -208,6 +219,9 @@ export class StudentLetterSubmissionService {
             }
           : undefined,
         signatures,
+        student: submission.student,
+        letter: submission.letter,
+        letterAttributes,
       },
       baseUrl,
     );
@@ -231,6 +245,7 @@ export class StudentLetterSubmissionService {
               },
             },
             letterTemplates: true,
+            letterAttributes: true,
           },
         },
         letterSignatures: {
@@ -245,6 +260,11 @@ export class StudentLetterSubmissionService {
             letterSignatureTemplate: {
               position: 'asc',
             },
+          },
+        },
+        letterAttributeSubmissions: {
+          include: {
+            letterAttribute: true,
           },
         },
       },
@@ -278,6 +298,14 @@ export class StudentLetterSubmissionService {
       position: sig.letterSignatureTemplate.position || 'right',
     }));
 
+    // Prepare letter attributes data for placeholder replacement
+    const letterAttributes = submission.letterAttributeSubmissions.map((submission) => ({
+      placeholder: submission.letterAttribute.attributeName,
+      content: submission.content,
+    }));
+
+    
+
     // Generate PDF using template service
     return this.letterTemplateService.generatePdf(
       {
@@ -294,6 +322,9 @@ export class StudentLetterSubmissionService {
             }
           : undefined,
         signatures,
+        student: submission.student,
+        letter: submission.letter,
+        letterAttributes,
       },
       baseUrl,
     );

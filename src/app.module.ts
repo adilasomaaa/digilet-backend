@@ -20,6 +20,8 @@ import { LetterSignatureModule } from './letter-signature/letter-signature.modul
 import { StudentLetterSubmissionModule } from './student-letter-submission/student-letter-submission.module';
 import { GeneralLetterSubmissionModule } from './general-letter-submission/general-letter-submission.module';
 import { DocumentSubmissionModule } from './document-submission/document-submission.module';
+import { LetterAttributeModule } from './letter-attribute/letter-attribute.module';
+import { LetterAttributeSubmissionModule } from './letter-attribute-submission/letter-attribute-submission.module';
 
 @Module({
   imports: [
@@ -42,6 +44,8 @@ import { DocumentSubmissionModule } from './document-submission/document-submiss
     StudentLetterSubmissionModule,
     GeneralLetterSubmissionModule,
     DocumentSubmissionModule,
+    LetterAttributeModule,
+    LetterAttributeSubmissionModule,
   ],
   providers: [
     FileUploadService,

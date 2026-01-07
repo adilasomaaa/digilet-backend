@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateHeaderDto } from './dto/create-header.dto';
 import { UpdateHeaderDto } from './dto/update-header.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -17,7 +21,7 @@ export class HeaderService {
       const cleanedPath = fullPath.replace('public/', '');
       createDto.logo = cleanedPath;
     } else {
-      throw new Error('Logo tidak ditemukan');
+      throw new ConflictException('Logo tidak ditemukan');
     }
 
     return await this.prismaService.header.create({

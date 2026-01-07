@@ -47,6 +47,25 @@ export class LetterheadService {
     };
   }
 
+  async upsert(createDto: CreateLetterheadDto) {
+    const existingData = await this.prismaService.letterHead.findFirst({
+      where: { letterId: createDto.letterId, headerId: createDto.headerId },
+    });
+    if (!existingData) {
+      await this.prismaService.letterHead.create({
+        data: createDto,
+      });
+
+      return 'Berhasil membuat letterhead';
+    }
+    await this.prismaService.letterHead.update({
+      where: { id: existingData.id },
+      data: createDto,
+    });
+
+    return 'Berhasil memperbarui letterhead';
+  }
+
   async findOne(id: number) {
     const data = await this.prismaService.letterHead.findUnique({
       where: { id },

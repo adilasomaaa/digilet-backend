@@ -9,9 +9,6 @@ import * as fs from 'fs';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  app.useStaticAssets(join(__dirname, '..', 'public'), {
-    prefix: '/public/',
-  });
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -44,9 +41,9 @@ async function bootstrap() {
     .build();
   const documentFactory = SwaggerModule.createDocument(app, config);
   
-fs.writeFileSync('./swagger.json', JSON.stringify(documentFactory, null, 2));
-  SwaggerModule.setup('api/docs', app, documentFactory);
-
+  // fs.writeFileSync(join(__dirname, '..', 'swagger.json'), JSON.stringify(documentFactory, null, 2));
+  // SwaggerModule.setup('api/docs', app, documentFactory);
+  app.useStaticAssets(join(process.cwd(), 'public'));
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

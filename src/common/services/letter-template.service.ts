@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import puppeteer from 'puppeteer';
 
+
+interface LetterAttributeData {
+  placeholder: string;
+  content: string;
+}
+
 interface LetterPrintData {
   letterNumber?: string;
   recipientName: string;
@@ -19,12 +25,41 @@ interface LetterPrintData {
     officialNip: string;
     position: string;
   }>;
+  // Data untuk placeholder replacement
+  student?: any; // Student data
+  letter?: any; // Letter data
+  letterAttributes?: LetterAttributeData[]; // LetterAttributeSubmission data
 }
 
 @Injectable()
 export class LetterTemplateService {
+    private readonly studentMapping = {
+        'nama_mahasiswa': 'fullname',
+        'nim': 'nim',
+        'angkatan': 'classYear',
+        'program_studi': 'studyProgram.name',
+        'alamat': 'address',
+        'nomor_telepon': 'phoneNumber',
+        'tempat_lahir': 'birthplace',
+        'tanggal_lahir': 'birthday',
+        'jenis_kelamin': 'gender',
+      };
+      
+      private readonly letterMapping = {
+        'nama_surat': 'letterName',
+        'nomor_referensi': 'referenceNumber',
+      };
+
   generatePrintHtml(data: LetterPrintData, baseUrl: string): string {
     const { letterNumber, recipientName, recipientInfo, letterContent, letterhead, signatures } = data;
+    
+    // Replace placeholders in letter content
+    const processedContent = this.replacePlaceholders(
+      letterContent,
+      data.student,
+      data.letter,
+      data.letterAttributes || [],
+    );
 
     return `
 <!DOCTYPE html>
@@ -46,6 +81,31 @@ export class LetterTemplateService {
                 display: none;
             }
         }
+        .header-wrapper {
+            display: flex;
+            align-items: center;
+            border-bottom: 4px double #000;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .header-logo {
+            flex: 0 0 80px; /* Lebar area logo */
+            margin-right: 15px;
+        }
+        .header-logo img {
+            max-width: 80px;
+            max-height: 100px;
+            object-fit: contain;
+        }
+        .header-text {
+            flex: 1;
+            text-align: center;
+            /* Kompensasi agar teks tetap di tengah meskipun ada logo di kiri */
+            margin-right: 80px; 
+        }
+        .header-univ { font-size: 12pt; font-weight: bold; margin: 0; }
+        .header-fai { font-size: 14pt; font-weight: bold; margin: 0; }
+        .header-address { font-size: 9pt; margin: 0; }
         body {
             font-family: 'Times New Roman', serif;
             font-size: 12pt;
@@ -154,23 +214,25 @@ export class LetterTemplateService {
 <body>
     <div class="letter-container">
         ${letterhead ? `
-        <div class="letterhead">
-            ${letterhead.logo ? this.getImageTag(letterhead.logo, baseUrl, 'Logo') : ''}
-            <h1>${this.escapeHtml(letterhead.header)}</h1>
-            ${letterhead.subheader ? `<h2>${this.escapeHtml(letterhead.subheader)}</h2>` : ''}
-            ${letterhead.address ? `<p>${this.escapeHtml(letterhead.address)}</p>` : ''}
+        <div class="header-wrapper">
+            ${letterhead?.logo ? `
+                <div class="header-logo">
+                    <img src="${this.getImagePath(letterhead.logo, baseUrl)}" alt="Logo">
+                </div>
+                ` : ''}
+                
+                <div class="header-text">
+                    <p class="header-univ">${letterhead.header}</p>
+                    <p class="header-fai">${letterhead.subheader}</p>
+                    <p class="header-address">Alamat: ${letterhead.address}</p>
+                    <p class="header-address">Website: http://fai.umgo.ac.id/</p>
+                </div>
         </div>
         ` : ''}
         
-        <div class="letter-info">
-            ${letterNumber ? `<p><strong>Nomor:</strong> ${this.escapeHtml(letterNumber)}</p>` : ''}
-            <p><strong>Kepada Yth.</strong></p>
-            <p><strong>${this.escapeHtml(recipientName)}</strong></p>
-            ${recipientInfo ? recipientInfo.map(info => `<p>${this.escapeHtml(info)}</p>`).join('') : ''}
-        </div>
 
         <div class="letter-content">
-            ${letterContent}
+            ${processedContent}
         </div>
 
         <div class="signatures">
@@ -198,14 +260,11 @@ export class LetterTemplateService {
     `;
   }
 
-  private getImagePath(path: string, baseUrl: string): string {
-    if (path.startsWith('http')) {
-      return path;
-    }
-    if (path.startsWith('/')) {
-      return `${baseUrl}${path}`;
-    }
-    return `${baseUrl}/${path}`;
+  private getImagePath(imagePath: string, baseUrl: string): string {
+    if (!imagePath) return '';
+    console.log(`${baseUrl}/${imagePath.replace(/^\//, '')}`);
+    
+    return `${baseUrl}/${imagePath.replace(/^\//, '')}`;
   }
 
   private getImageTag(path: string, baseUrl: string, alt: string): string {
@@ -240,6 +299,86 @@ export class LetterTemplateService {
     } finally {
       await browser.close();
     }
+  }
+
+  /**
+   * Replace placeholders in template content
+   * Supports:
+   * - [attribute_name] from LetterAttributeSubmission
+   * - [student.field] from Student data
+   * - [letter.field] from Letter data
+   */
+  private replacePlaceholders(
+    content: string,
+    student?: any,
+    letter?: any,
+    letterAttributes: LetterAttributeData[] = [],
+  ): string {
+    let processedContent = content;
+
+    if (student) {
+        Object.entries(this.studentMapping).forEach(([placeholder, fieldPath]) => {
+        const regex = new RegExp(`\\[${placeholder}\\]`, 'g');
+        const value = this.getNestedValue(student, fieldPath);
+        processedContent = processedContent.replace(regex, value ? String(value) : '');
+        });
+    }
+
+    // 2. Ganti Kustom Placeholder Surat [nama_surat] -> letterName
+    if (letter) {
+        Object.entries(this.letterMapping).forEach(([placeholder, fieldPath]) => {
+        const regex = new RegExp(`\\[${placeholder}\\]`, 'g');
+        const value = this.getNestedValue(letter, fieldPath);
+        processedContent = processedContent.replace(regex, value ? String(value) : '');
+        });
+    }
+
+    // 3. Tetap pertahankan fungsionalitas lama untuk LetterAttribute kustom
+    letterAttributes.forEach((attr) => {
+        const regex = new RegExp(`\\[${this.escapeRegex(attr.placeholder)}\\]`, 'g');
+        processedContent = processedContent.replace(regex, attr.content || '');
+    });
+
+    return processedContent;
+  }
+
+  /**
+   * Get nested value from object using dot notation
+   * Supports nested paths like "studyProgram.name"
+   */
+  private getNestedValue(obj: any, path: string): any {
+    if (!obj || !path) {
+      return undefined;
+    }
+    
+    const keys = path.split('.');
+    let current = obj;
+    
+    for (const key of keys) {
+      if (current === null || current === undefined) {
+        return undefined;
+      }
+      current = current[key];
+    }
+    
+    return current;
+  }
+
+  private formatDate(date: any): string {
+    if (!date) return '';
+    const d = new Date(date);
+    return d.toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  }
+
+  /**
+   * Escape special regex characters
+   */
+  private escapeRegex(str: string): string {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   private escapeHtml(text: string): string {
