@@ -58,7 +58,7 @@ export class PersonnelService {
           data: {
             name: createPersonnelDto.name,
             position: createPersonnelDto.position,
-            studyProgramId: createPersonnelDto.studyProgramId ?? undefined,
+            institutionId: createPersonnelDto.institutionId ?? undefined,
             userId: newUser.id,
           },
         });
@@ -86,7 +86,7 @@ export class PersonnelService {
 
     const [data, total] = await this.prismaService.$transaction([
       this.prismaService.personnel.findMany({
-        include: { studyProgram: true, user: true },
+        include: { institution: true, user: true },
         skip,
         where,
         take: limit,
@@ -108,7 +108,7 @@ export class PersonnelService {
 
   async findOne(id: number) {
     const data = await this.prismaService.personnel.findUnique({
-      include: { studyProgram: true, user: true },
+      include: { institution: true, user: true },
       where: { id },
     });
     if (!data) {
@@ -154,7 +154,7 @@ export class PersonnelService {
           data: {
             name: updatePersonnelDto.name,
             position: updatePersonnelDto.position,
-            studyProgramId: updatePersonnelDto.studyProgramId ?? undefined,
+            institutionId: updatePersonnelDto.institutionId ?? undefined,
           },
         });
 

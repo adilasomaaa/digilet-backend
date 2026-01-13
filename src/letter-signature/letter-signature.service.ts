@@ -4,14 +4,19 @@ import { UpdateLetterSignatureDto } from './dto/update-letter-signature.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { QueryLetterSignatureDto } from './dto/query-letter-signature.dto';
 import { Prisma } from '@prisma/client';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class LetterSignatureService {
   constructor(private prismaService: PrismaService) {}
 
   async create(createDto: CreateLetterSignatureDto) {
+    const token = randomUUID();
     return await this.prismaService.letterSignature.create({
-      data: createDto,
+      data: {
+        ...createDto,
+        token,
+      },
     });
   }
 

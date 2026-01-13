@@ -16,7 +16,7 @@ export class CreateStudentDto {
 
   @ApiProperty({ example: 1, description: 'Study program ID' })
   @IsNotEmpty({ message: 'Program studi tidak boleh kosong' })
-  studyProgramId: number;
+  institutionId: number;
 
   @ApiProperty({ example: 'admin@example.com', description: 'email' })
   @IsNotEmpty({ message: 'Email tidak boleh kosong' })

@@ -3,22 +3,27 @@ import { CreateLetterDto } from './dto/create-letter.dto';
 import { UpdateLetterDto } from './dto/update-letter.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { QueryLetterDto } from './dto/query-letter.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 
 @Injectable()
 export class LetterService {
   constructor(private prismaService: PrismaService) {}
 
-  async create(createDto: CreateLetterDto, userId: number) {
+  async create(createDto: CreateLetterDto, user: any) {
+    const { letterHeadId, ...rest } = createDto;
+    const userId = user.id;
+    const institutionId = user.personnel.institutionId;
     return await this.prismaService.letter.create({
       data: {
         ...createDto,
-        user: { connect: { id: userId } },
+        userId,
+        institutionId,
+        letterHeadId,
       },
     });
   }
 
-  async findAll(query: QueryLetterDto) {
+  async findAll(query: QueryLetterDto, user: any) {
     const { page, limit, search, category } = query;
     const skip = (page - 1) * limit;
 
@@ -32,16 +37,8 @@ export class LetterService {
       where.category = category;
     }
 
-    if (query.programStudyId) {
-      where.user = {
-        is: {
-          personnels: {
-            some: {
-              studyProgramId: query.programStudyId,
-            },
-          },
-        },
-      };
+    if (user.roles.name !== 'admin') {
+      where.institutionId = user.personnel.institutionId;
     }
 
     const [data, total] = await this.prismaService.$transaction([
@@ -53,13 +50,11 @@ export class LetterService {
         include: {
           user: {
             include: {
-              personnels: {
-                include: {
-                  studyProgram: true,
-                },
-              },
+              personnel: true,
             },
           },
+          institution: true,
+          letterHead: true,
         },
       }),
       this.prismaService.letter.count(),
@@ -82,13 +77,11 @@ export class LetterService {
       include: {
         user: {
           include: {
-            personnels: {
-              include: {
-                studyProgram: true,
-              },
-            },
+            personnel: true,
           },
         },
+        institution: true,
+        letterHead: true,
       },
     });
     if (!data) {

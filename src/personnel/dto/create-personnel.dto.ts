@@ -21,6 +21,6 @@ export class CreatePersonnelDto {
     nullable: true,
   })
   @IsOptional()
-  @IsInt({ message: 'Study Program ID harus berupa angka' })
-  studyProgramId?: number;
+  @IsInt({ message: 'Institusi ID harus berupa angka' })
+  institutionId: number;
 }

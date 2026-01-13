@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import puppeteer from 'puppeteer';
 
-
 interface LetterAttributeData {
   placeholder: string;
   content: string;
@@ -12,12 +11,7 @@ interface LetterPrintData {
   recipientName: string;
   recipientInfo?: string[];
   letterContent: string;
-  letterhead?: {
-    logo?: string;
-    header: string;
-    subheader?: string;
-    address?: string;
-  };
+  letterhead?: any;
   signatures: Array<{
     signature?: string;
     officialName: string;
@@ -33,26 +27,38 @@ interface LetterPrintData {
 
 @Injectable()
 export class LetterTemplateService {
-    private readonly studentMapping = {
-        'nama_mahasiswa': 'fullname',
-        'nim': 'nim',
-        'angkatan': 'classYear',
-        'program_studi': 'studyProgram.name',
-        'alamat': 'address',
-        'nomor_telepon': 'phoneNumber',
-        'tempat_lahir': 'birthplace',
-        'tanggal_lahir': 'birthday',
-        'jenis_kelamin': 'gender',
-      };
-      
-      private readonly letterMapping = {
-        'nama_surat': 'letterName',
-        'nomor_referensi': 'referenceNumber',
-      };
+  private readonly studentMapping = {
+    nama_mahasiswa: 'fullname',
+    nim: 'nim',
+    angkatan: 'classYear',
+    program_studi: 'studyProgram.name',
+    alamat: 'address',
+    nomor_telepon: 'phoneNumber',
+    tempat_lahir: 'birthplace',
+    tanggal_lahir: 'birthday',
+    jenis_kelamin: 'gender',
+  };
+
+  private readonly letterMapping = {
+    nama_surat: 'letterName',
+    nomor_referensi: 'referenceNumber',
+  };
+
+  private readonly submissionMapping = {
+    nomor_surat: 'letterNumber',
+    tanggal_surat: 'letterDate', // Akan diformat nantinya
+  };
 
   generatePrintHtml(data: LetterPrintData, baseUrl: string): string {
-    const { letterNumber, recipientName, recipientInfo, letterContent, letterhead, signatures } = data;
-    
+    const {
+      letterNumber,
+      recipientName,
+      recipientInfo,
+      letterContent,
+      letterhead,
+      signatures,
+    } = data;
+
     // Replace placeholders in letter content
     const processedContent = this.replacePlaceholders(
       letterContent,
@@ -213,13 +219,19 @@ export class LetterTemplateService {
 </head>
 <body>
     <div class="letter-container">
-        ${letterhead ? `
+        ${
+          letterhead
+            ? `
         <div class="header-wrapper">
-            ${letterhead?.logo ? `
+            ${
+              letterhead?.logo
+                ? `
                 <div class="header-logo">
                     <img src="${this.getImagePath(letterhead.logo, baseUrl)}" alt="Logo">
                 </div>
-                ` : ''}
+                `
+                : ''
+            }
                 
                 <div class="header-text">
                     <p class="header-univ">${letterhead.header}</p>
@@ -228,7 +240,9 @@ export class LetterTemplateService {
                     <p class="header-address">Website: http://fai.umgo.ac.id/</p>
                 </div>
         </div>
-        ` : ''}
+        `
+            : ''
+        }
         
 
         <div class="letter-content">
@@ -236,11 +250,19 @@ export class LetterTemplateService {
         </div>
 
         <div class="signatures">
-            ${signatures.map((sig) => {
-              const signaturePath = sig.signature ? this.getImagePath(sig.signature, baseUrl) : '';
-              const position = sig.position || 'right';
-              const positionStyle = position === 'left' ? 'left' : position === 'center' ? 'center' : 'right';
-              return `
+            ${signatures
+              .map((sig) => {
+                const signaturePath = sig.signature
+                  ? this.getImagePath(sig.signature, baseUrl)
+                  : '';
+                const position = sig.position || 'right';
+                const positionStyle =
+                  position === 'left'
+                    ? 'left'
+                    : position === 'center'
+                      ? 'center'
+                      : 'right';
+                return `
                 <div class="signature-block" style="text-align: ${positionStyle};">
                     ${signaturePath ? `<img src="${signaturePath}" alt="Signature" class="signature-image" />` : ''}
                     <div class="official-name">${this.escapeHtml(sig.officialName)}</div>
@@ -248,7 +270,8 @@ export class LetterTemplateService {
                     <div class="official-nip">NIP. ${this.escapeHtml(sig.officialNip)}</div>
                 </div>
               `;
-            }).join('')}
+              })
+              .join('')}
         </div>
     </div>
 
@@ -263,7 +286,7 @@ export class LetterTemplateService {
   private getImagePath(imagePath: string, baseUrl: string): string {
     if (!imagePath) return '';
     console.log(`${baseUrl}/${imagePath.replace(/^\//, '')}`);
-    
+
     return `${baseUrl}/${imagePath.replace(/^\//, '')}`;
   }
 
@@ -313,30 +336,61 @@ export class LetterTemplateService {
     student?: any,
     letter?: any,
     letterAttributes: LetterAttributeData[] = [],
+    submission?: any, // Tambahkan parameter submission di sini
   ): string {
     let processedContent = content;
 
     if (student) {
-        Object.entries(this.studentMapping).forEach(([placeholder, fieldPath]) => {
-        const regex = new RegExp(`\\[${placeholder}\\]`, 'g');
-        const value = this.getNestedValue(student, fieldPath);
-        processedContent = processedContent.replace(regex, value ? String(value) : '');
-        });
+      Object.entries(this.studentMapping).forEach(
+        ([placeholder, fieldPath]) => {
+          const regex = new RegExp(`\\[${placeholder}\\]`, 'g');
+          const value = this.getNestedValue(student, fieldPath);
+          processedContent = processedContent.replace(
+            regex,
+            value ? String(value) : '',
+          );
+        },
+      );
+    }
+
+    if (submission) {
+      Object.entries(this.submissionMapping).forEach(
+        ([placeholder, fieldPath]) => {
+          const regex = new RegExp(`\\[${placeholder}\\]`, 'g');
+          let value = this.getNestedValue(submission, fieldPath);
+
+          // Formating khusus jika field adalah tanggal_surat
+          if (placeholder === 'tanggal_surat' && value) {
+            value = this.formatDate(value);
+          }
+
+          processedContent = processedContent.replace(
+            regex,
+            value ? String(value) : '',
+          );
+        },
+      );
     }
 
     // 2. Ganti Kustom Placeholder Surat [nama_surat] -> letterName
     if (letter) {
-        Object.entries(this.letterMapping).forEach(([placeholder, fieldPath]) => {
+      Object.entries(this.letterMapping).forEach(([placeholder, fieldPath]) => {
         const regex = new RegExp(`\\[${placeholder}\\]`, 'g');
         const value = this.getNestedValue(letter, fieldPath);
-        processedContent = processedContent.replace(regex, value ? String(value) : '');
-        });
+        processedContent = processedContent.replace(
+          regex,
+          value ? String(value) : '',
+        );
+      });
     }
 
     // 3. Tetap pertahankan fungsionalitas lama untuk LetterAttribute kustom
     letterAttributes.forEach((attr) => {
-        const regex = new RegExp(`\\[${this.escapeRegex(attr.placeholder)}\\]`, 'g');
-        processedContent = processedContent.replace(regex, attr.content || '');
+      const regex = new RegExp(
+        `\\[${this.escapeRegex(attr.placeholder)}\\]`,
+        'g',
+      );
+      processedContent = processedContent.replace(regex, attr.content || '');
     });
 
     return processedContent;
@@ -350,19 +404,20 @@ export class LetterTemplateService {
     if (!obj || !path) {
       return undefined;
     }
-    
+
     const keys = path.split('.');
     let current = obj;
-    
+
     for (const key of keys) {
       if (current === null || current === undefined) {
         return undefined;
       }
       current = current[key];
     }
-    
+
     return current;
   }
+  
 
   private formatDate(date: any): string {
     if (!date) return '';
@@ -370,7 +425,7 @@ export class LetterTemplateService {
     return d.toLocaleDateString('id-ID', {
       day: 'numeric',
       month: 'long',
-      year: 'numeric'
+      year: 'numeric',
     });
   }
 

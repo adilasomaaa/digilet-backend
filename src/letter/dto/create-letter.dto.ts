@@ -1,12 +1,25 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { LetterCategory, SignatureType } from '@prisma/client';
-import { IsIn, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsIn,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateLetterDto {
   @ApiProperty({ example: 'Surat Pengantar', description: 'nama surat' })
   @IsNotEmpty({ message: 'nama surat tidak boleh kosong' })
   @IsString({ message: 'nama surat harus berupa string' })
   letterName: string;
+
+  @ApiProperty({
+    description: 'ID dari surat',
+  })
+  @IsOptional()
+  @IsNumber()
+  letterHeadId?: number;
 
   @ApiProperty({ example: '123/456/789', description: 'nomor surat' })
   @IsNotEmpty({ message: 'nomor surat tidak boleh kosong' })

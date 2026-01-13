@@ -82,6 +82,11 @@ export class AuthService {
             },
           },
         },
+        personnel: {
+          include: {
+            institution: true,
+          },
+        },
       },
     });
 

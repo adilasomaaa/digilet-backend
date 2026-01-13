@@ -5,5 +5,5 @@ import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 export class QueryStudentDto extends PaginationQueryDto {
   @ApiProperty({ example: 1, description: 'ID Program Studi', required: false })
   @IsOptional()
-  studyProgramId?: number;
+  institutionId?: number;
 }

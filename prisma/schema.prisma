@@ -32,6 +32,13 @@ enum StudentLetterStatus {
   rejected
 }
 
+enum InstitutionType {
+  university
+  faculty
+  study_program
+  institution
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -40,37 +47,41 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  personnels               Personnel[]
+  personnel                Personnel?
   student                  Student[]
   userRoles                UserRoles[]
   activeTokens             ActiveToken[]
+  generalLetterSubmissions GeneralLetterSubmission[]
+  letters                  Letter[]
+  letterHeads              LetterHead[]
+}
+
+model Institution {
+  id        Int             @id @default(autoincrement())
+  name      String          @unique
+  address   String?
+  type      InstitutionType
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  personnels               Personnel[]
+  officials                Official[]
+  students                 Student[]
+  letterHeads              LetterHead[]
   letters                  Letter[]
   generalLetterSubmissions GeneralLetterSubmission[]
 }
 
-model StudyProgram {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  address   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  personnels Personnel[]
-  officials  Official[]
-  students   Student[]
-  headers    Header[]
-}
-
 model Personnel {
-  id             Int           @id @default(autoincrement())
-  name           String
-  position       String
-  studyProgram   StudyProgram? @relation(fields: [studyProgramId], references: [id])
-  studyProgramId Int?
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         Int
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id            Int          @id @default(autoincrement())
+  name          String
+  position      String
+  institution   Institution? @relation(fields: [institutionId], references: [id])
+  institutionId Int?
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int          @unique
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 }
 
 model Official {
@@ -78,8 +89,8 @@ model Official {
   name                     String
   occupation               String
   nip                      String
-  studyProgram             StudyProgram?             @relation(fields: [studyProgramId], references: [id])
-  studyProgramId           Int?
+  institution              Institution?              @relation(fields: [institutionId], references: [id])
+  institutionId            Int?
   createdAt                DateTime                  @default(now())
   updatedAt                DateTime                  @updatedAt
   letterSignatureTemplates LetterSignatureTemplate[]
@@ -89,8 +100,8 @@ model Student {
   id                       Int                       @id @default(autoincrement())
   user                     User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId                   Int                       @unique
-  studyProgram             StudyProgram              @relation(fields: [studyProgramId], references: [id])
-  studyProgramId           Int
+  institution              Institution               @relation(fields: [institutionId], references: [id])
+  institutionId            Int
   fullname                 String
   nim                      String                    @unique
   classYear                String
@@ -156,8 +167,12 @@ model ActiveToken {
 
 model Letter {
   id                   Int            @id @default(autoincrement())
+  institution          Institution    @relation(fields: [institutionId], references: [id])
+  institutionId        Int
   user                 User           @relation(fields: [userId], references: [id])
   userId               Int
+  letterHeadId         Int?
+  letterHead           LetterHead?    @relation(fields: [letterHeadId], references: [id])
   letterName           String
   referenceNumber      String
   expiredDate          Int
@@ -167,7 +182,6 @@ model Letter {
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
 
-  letterHeads              LetterHead[]
   letterTemplates          LetterTemplate[]
   letterSignatureTemplates LetterSignatureTemplate[]
   studentLetterSubmissions StudentLetterSubmission[]
@@ -176,29 +190,21 @@ model Letter {
   letterAttributes         LetterAttribute[]
 }
 
-model Header {
-  id             Int           @id @default(autoincrement())
-  studyProgramId Int?
-  studyProgram   StudyProgram? @relation(fields: [studyProgramId], references: [id])
-  name           String
-  header         String
-  subheader      String
-  address        String
-  logo           String
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-
-  letterHeads LetterHead[]
-}
-
 model LetterHead {
-  id        Int      @id @default(autoincrement())
-  headerId  Int
-  header    Header   @relation(fields: [headerId], references: [id], onDelete: Cascade)
-  letterId  Int
-  letter    Letter   @relation(fields: [letterId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            Int          @id @default(autoincrement())
+  institutionId Int?
+  institution   Institution? @relation(fields: [institutionId], references: [id])
+  user          User         @relation(fields: [userId], references: [id])
+  userId        Int
+  name          String
+  header        String
+  subheader     String
+  address       String
+  logo          String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  letter Letter[]
 }
 
 model LetterTemplate {
@@ -230,6 +236,7 @@ model StudentLetterSubmission {
   letterId                   Int
   letter                     Letter                      @relation(fields: [letterId], references: [id])
   letterNumber               String?
+  letterDate                 DateTime?
   status                     StudentLetterStatus
   createdAt                  DateTime                    @default(now())
   updatedAt                  DateTime                    @updatedAt
@@ -242,9 +249,13 @@ model GeneralLetterSubmission {
   id                         Int                         @id @default(autoincrement())
   userId                     Int
   user                       User                        @relation(fields: [userId], references: [id])
+  institutionId              Int
+  institution                Institution                 @relation(fields: [institutionId], references: [id])
   letterId                   Int
   letter                     Letter                      @relation(fields: [letterId], references: [id])
   letterNumber               String?
+  name                       String?
+  letterDate                 DateTime?
   createdAt                  DateTime                    @default(now())
   updatedAt                  DateTime                    @updatedAt
   letterSignatures           LetterSignature[]
@@ -259,8 +270,9 @@ model LetterSignature {
   generalLetterSubmission   GeneralLetterSubmission? @relation(fields: [generalLetterSubmissionId], references: [id], onDelete: Cascade)
   letterSignatureTemplateId Int
   letterSignatureTemplate   LetterSignatureTemplate  @relation(fields: [letterSignatureTemplateId], references: [id], onDelete: Cascade)
-  signature                 String
+  signature                 String?
   verifiedAt                DateTime?
+  token                     String
   createdAt                 DateTime                 @default(now())
   updatedAt                 DateTime                 @updatedAt
 }

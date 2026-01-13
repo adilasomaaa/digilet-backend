@@ -27,7 +27,7 @@ export class OfficialService {
     const [data, total] = await this.prismaService.$transaction([
       this.prismaService.official.findMany({
         include: {
-          studyProgram: true,
+          institution: true,
         },
         where,
         skip: (Number(page) - 1) * Number(limit),

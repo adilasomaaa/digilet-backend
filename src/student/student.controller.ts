@@ -106,15 +106,14 @@ export class StudentController {
   })
   async import(
     @UploadedFile() file: Express.Multer.File,
-    @Query('studyProgramId', ParseIntPipe) studyProgramId: number,
+    @Query('institutionId', ParseIntPipe) institutionId: number,
   ) {
     if (!file) throw new BadRequestException('File excel harus diunggah');
-    if (!studyProgramId)
-      new BadRequestException('Program studi harus dipilih.');
+    if (!institutionId) new BadRequestException('Program studi harus dipilih.');
 
     const result = await this.studentService.importFromExcel(
       file.buffer,
-      studyProgramId,
+      institutionId,
     );
     return ApiResponse.successWithData(
       `${result.total} Data mahasiswa berhasil diimpor`,

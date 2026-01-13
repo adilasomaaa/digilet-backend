@@ -19,11 +19,11 @@ export class CreateOfficialDto {
 
   @ApiProperty({
     example: 1,
-    description: 'study pogram Id',
+    description: 'institusi Id',
     nullable: true,
     required: false,
   })
   @IsNumber()
   @IsOptional()
-  studyProgramId?: number;
+  institutionId?: number;
 }

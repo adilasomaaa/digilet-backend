@@ -29,8 +29,11 @@ export class GeneralLetterSubmissionController {
   @Post()
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
-  async create(@Body() createDto: CreateGeneralLetterSubmissionDto) {
-    await this.generalLetterSubmissionService.create(createDto);
+  async create(
+    @Body() createDto: CreateGeneralLetterSubmissionDto,
+    @Req() req: any,
+  ) {
+    await this.generalLetterSubmissionService.create(createDto, req.user);
     return ApiResponse.success('General letter submission berhasil dibuat');
   }
 
@@ -49,9 +52,16 @@ export class GeneralLetterSubmissionController {
   @Get(':id/print')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
-  async print(@Param('id') id: string, @Req() req: Request, @Res() res: Response) {
+  async print(
+    @Param('id') id: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
     const baseUrl = `${req.protocol}://${req.get('host')}`;
-    const html = await this.generalLetterSubmissionService.printLetter(+id, baseUrl);
+    const html = await this.generalLetterSubmissionService.printLetter(
+      +id,
+      baseUrl,
+    );
     res.setHeader('Content-Type', 'text/html');
     return res.send(html);
   }
@@ -59,10 +69,17 @@ export class GeneralLetterSubmissionController {
   @Get(':id/print-pdf')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
-  async printPdf(@Param('id') id: string, @Req() req: Request, @Res() res: Response) {
+  async printPdf(
+    @Param('id') id: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
     const baseUrl = `${req.protocol}://${req.get('host')}`;
-    const pdfBuffer = await this.generalLetterSubmissionService.printLetterPdf(+id, baseUrl);
-    
+    const pdfBuffer = await this.generalLetterSubmissionService.printLetterPdf(
+      +id,
+      baseUrl,
+    );
+
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="surat-${id}.pdf"`);
     return res.send(pdfBuffer);

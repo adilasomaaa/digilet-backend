@@ -42,7 +42,7 @@ export class StudentLetterSubmissionService {
           student: {
             include: {
               user: true,
-              studyProgram: true,
+              institution: true,
             },
           },
           letter: true,
@@ -83,7 +83,7 @@ export class StudentLetterSubmissionService {
         student: {
           include: {
             user: true,
-            studyProgram: true,
+            institution: true,
           },
         },
         letter: true,
@@ -109,10 +109,7 @@ export class StudentLetterSubmissionService {
     return data;
   }
 
-  async update(
-    id: number,
-    updateDto: UpdateStudentLetterSubmissionDto,
-  ) {
+  async update(id: number, updateDto: UpdateStudentLetterSubmissionDto) {
     await this.findOne(id);
     return await this.prismaService.studentLetterSubmission.update({
       where: { id },
@@ -128,53 +125,50 @@ export class StudentLetterSubmissionService {
   }
 
   async printLetter(id: number, baseUrl: string = 'http://localhost:3000') {
-    const submission = await this.prismaService.studentLetterSubmission.findUnique({
-      where: { id },
-      include: {
-        student: {
-          include: {
-            user: true,
-            studyProgram: true,
+    const submission =
+      await this.prismaService.studentLetterSubmission.findUnique({
+        where: { id },
+        include: {
+          student: {
+            include: {
+              user: true,
+              institution: true,
+            },
           },
-        },
-        letter: {
-          include: {
-            letterHeads: {
-              include: {
-                header: true,
+          letter: {
+            include: {
+              letterHead: true,
+              letterTemplates: true,
+            },
+          },
+          letterSignatures: {
+            include: {
+              letterSignatureTemplate: {
+                include: {
+                  official: true,
+                },
               },
             },
-            letterTemplates: true,
-          },
-        },
-        letterSignatures: {
-          include: {
-            letterSignatureTemplate: {
-              include: {
-                official: true,
+            orderBy: {
+              letterSignatureTemplate: {
+                position: 'asc',
               },
             },
           },
-          orderBy: {
-            letterSignatureTemplate: {
-              position: 'asc',
+          letterAttributeSubmissions: {
+            include: {
+              letterAttribute: true,
             },
           },
         },
-        letterAttributeSubmissions: {
-          include: {
-            letterAttribute: true,
-          },
-        },
-      },
-    });
+      });
 
     if (!submission) {
       throw new NotFoundException('Student letter submission tidak ditemukan');
     }
 
     // Get letterhead (header)
-    const letterhead = submission.letter.letterHeads[0]?.header;
+    const letterhead = submission.letter.letterHead;
     const letterTemplate = submission.letter.letterTemplates[0];
 
     if (!letterTemplate) {
@@ -184,13 +178,13 @@ export class StudentLetterSubmissionService {
     // Prepare recipient info
     const recipientInfo: string[] = [];
     recipientInfo.push(submission.student.nim);
-    if (submission.student.studyProgram) {
-      recipientInfo.push(submission.student.studyProgram.name);
+    if (submission.student.institution) {
+      recipientInfo.push(submission.student.institution.name);
     }
 
     // Prepare signatures data
     const signatures = submission.letterSignatures.map((sig) => ({
-      signature: sig.signature,
+      signature: sig.signature || undefined,
       officialName: sig.letterSignatureTemplate.official.name,
       officialPosition: sig.letterSignatureTemplate.official.occupation,
       officialNip: sig.letterSignatureTemplate.official.nip,
@@ -198,10 +192,12 @@ export class StudentLetterSubmissionService {
     }));
 
     // Prepare letter attributes data for placeholder replacement
-    const letterAttributes = submission.letterAttributeSubmissions.map((submission) => ({
-      placeholder: submission.letterAttribute.attributeName,
-      content: submission.content,
-    }));
+    const letterAttributes = submission.letterAttributeSubmissions.map(
+      (submission) => ({
+        placeholder: submission.letterAttribute.attributeName,
+        content: submission.content,
+      }),
+    );
 
     // Generate HTML using template service
     return this.letterTemplateService.generatePrintHtml(
@@ -210,72 +206,66 @@ export class StudentLetterSubmissionService {
         recipientName: submission.student.fullname,
         recipientInfo,
         letterContent: letterTemplate.content,
-        letterhead: letterhead
-          ? {
-              logo: letterhead.logo,
-              header: letterhead.header,
-              subheader: letterhead.subheader || undefined,
-              address: letterhead.address || undefined,
-            }
-          : undefined,
+        letterhead: letterhead,
         signatures,
         student: submission.student,
         letter: submission.letter,
         letterAttributes,
-      },
+        submission: submission,
+      } as any,
       baseUrl,
     );
   }
 
-  async printLetterPdf(id: number, baseUrl: string = 'http://localhost:3000'): Promise<Buffer> {
-    const submission = await this.prismaService.studentLetterSubmission.findUnique({
-      where: { id },
-      include: {
-        student: {
-          include: {
-            user: true,
-            studyProgram: true,
+  async printLetterPdf(
+    id: number,
+    baseUrl: string = 'http://localhost:3000',
+  ): Promise<Buffer> {
+    const submission =
+      await this.prismaService.studentLetterSubmission.findUnique({
+        where: { id },
+        include: {
+          student: {
+            include: {
+              user: true,
+              institution: true,
+            },
           },
-        },
-        letter: {
-          include: {
-            letterHeads: {
-              include: {
-                header: true,
+          letter: {
+            include: {
+              letterHead: true,
+              letterTemplates: true,
+              letterAttributes: true,
+            },
+          },
+          letterSignatures: {
+            include: {
+              letterSignatureTemplate: {
+                include: {
+                  official: true,
+                },
               },
             },
-            letterTemplates: true,
-            letterAttributes: true,
-          },
-        },
-        letterSignatures: {
-          include: {
-            letterSignatureTemplate: {
-              include: {
-                official: true,
+            orderBy: {
+              letterSignatureTemplate: {
+                position: 'asc',
               },
             },
           },
-          orderBy: {
-            letterSignatureTemplate: {
-              position: 'asc',
+          letterAttributeSubmissions: {
+            include: {
+              letterAttribute: true,
             },
           },
         },
-        letterAttributeSubmissions: {
-          include: {
-            letterAttribute: true,
-          },
-        },
-      },
-    });
+      });
 
     if (!submission) {
       throw new NotFoundException('Student letter submission tidak ditemukan');
     }
 
     // Get letterhead (header)
-    const letterhead = submission.letter.letterHeads[0]?.header;
+    const letterhead = submission.letter.letterHead;
     const letterTemplate = submission.letter.letterTemplates[0];
 
     if (!letterTemplate) {
@@ -285,13 +275,13 @@ export class StudentLetterSubmissionService {
     // Prepare recipient info
     const recipientInfo: string[] = [];
     recipientInfo.push(submission.student.nim);
-    if (submission.student.studyProgram) {
-      recipientInfo.push(submission.student.studyProgram.name);
+    if (submission.student.institution) {
+      recipientInfo.push(submission.student.institution.name);
     }
 
     // Prepare signatures data
     const signatures = submission.letterSignatures.map((sig) => ({
-      signature: sig.signature,
+      signature: sig.signature || undefined,
       officialName: sig.letterSignatureTemplate.official.name,
       officialPosition: sig.letterSignatureTemplate.official.occupation,
       officialNip: sig.letterSignatureTemplate.official.nip,
@@ -299,12 +289,12 @@ export class StudentLetterSubmissionService {
     }));
 
     // Prepare letter attributes data for placeholder replacement
-    const letterAttributes = submission.letterAttributeSubmissions.map((submission) => ({
-      placeholder: submission.letterAttribute.attributeName,
-      content: submission.content,
-    }));
-
-    
+    const letterAttributes = submission.letterAttributeSubmissions.map(
+      (submission) => ({
+        placeholder: submission.letterAttribute.attributeName,
+        content: submission.content,
+      }),
+    );
 
     // Generate PDF using template service
     return this.letterTemplateService.generatePdf(

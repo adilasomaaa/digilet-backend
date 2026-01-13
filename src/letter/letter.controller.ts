@@ -26,15 +26,15 @@ export class LetterController {
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
   async create(@Body() createDto: CreateLetterDto, @Req() req: any) {
-    await this.letterService.create(createDto, req.user.id);
+    await this.letterService.create(createDto, req.user);
     return ApiResponse.success('Letter berhasil dibuat');
   }
 
   @Get()
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
-  async findAll(@Query() query: QueryLetterDto) {
-    const result = await this.letterService.findAll(query);
+  async findAll(@Query() query: QueryLetterDto, @Req() req: any) {
+    const result = await this.letterService.findAll(query, req.user);
     return ApiResponse.successWithPaginate(
       'Letter berhasil diambil',
       result.data,

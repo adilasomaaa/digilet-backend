@@ -16,9 +16,12 @@ export class LetterDocumentService {
   }
 
   async findAll(query: QueryLetterDocumentDto) {
-    const { letterId, page = 1, limit = 10 } = query;
+    const { letterId, page = 1, limit = 10, search } = query;
     const where: Prisma.LetterDocumentWhereInput = {};
     if (letterId) where.letterId = letterId;
+    if (search) {
+      where.OR = [{ documentName: { contains: search } }];
+    }
     const [data, total] = await this.prismaService.$transaction([
       this.prismaService.letterDocument.findMany({
         skip: (Number(page) - 1) * Number(limit),

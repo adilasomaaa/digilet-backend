@@ -77,7 +77,7 @@ export class StudentService {
           data: {
             fullname: createDto.fullname,
             nim: createDto.nim,
-            studyProgramId: createDto.studyProgramId,
+            institutionId: createDto.institutionId,
             classYear: createDto.classYear,
             address: createDto.address,
             phoneNumber: createDto.phoneNumber,
@@ -105,7 +105,11 @@ export class StudentService {
     const where: Prisma.StudentWhereInput = {};
 
     if (search) {
-      where.OR = [{ fullname: { contains: search } }];
+      where.OR = [
+        { fullname: { contains: search } },
+        { institution: { name: { contains: search } } },
+        { nim: { contains: search } },
+      ];
     }
 
     const [data, total] = await this.prismaService.$transaction([
@@ -113,7 +117,7 @@ export class StudentService {
         skip: (Number(page) - 1) * Number(limit),
         take: Number(limit),
         include: {
-          studyProgram: true,
+          institution: true,
           user: true,
         },
         where,
@@ -197,7 +201,7 @@ export class StudentService {
           data: {
             fullname: updateDto.fullname,
             nim: updateDto.nim,
-            studyProgramId: updateDto.studyProgramId,
+            institutionId: updateDto.institutionId,
             classYear: updateDto.classYear,
             address: updateDto.address,
             phoneNumber: updateDto.phoneNumber,
@@ -223,7 +227,7 @@ export class StudentService {
 
   async exportToExcel() {
     const students = await this.prismaService.student.findMany({
-      include: { studyProgram: true, user: true },
+      include: { institution: true, user: true },
     });
 
     const workbook = new ExcelJS.Workbook();
@@ -233,7 +237,7 @@ export class StudentService {
       { header: 'ID', key: 'id', width: 10 },
       { header: 'Full Name', key: 'fullname', width: 30 },
       { header: 'NIM', key: 'nim', width: 20 },
-      { header: 'Study Program', key: 'studyProgram', width: 25 },
+      { header: 'Study Program', key: 'institution', width: 25 },
       { header: 'Class Year', key: 'classYear', width: 10 },
       { header: 'Address', key: 'address', width: 30 },
       { header: 'Phone Number', key: 'phoneNumber', width: 20 },
@@ -248,7 +252,7 @@ export class StudentService {
         id: student.id,
         fullname: student.fullname,
         nim: student.nim,
-        studyProgram: student.studyProgram?.name || '',
+        institution: student.institution?.name || '',
         classYear: student.classYear,
         address: student.address,
         phoneNumber: student.phoneNumber,
@@ -266,12 +270,12 @@ export class StudentService {
     return await workbook.xlsx.writeBuffer();
   }
 
-  async importFromExcel(fileBuffer: Buffer, studyProgramId: number) {
+  async importFromExcel(fileBuffer: Buffer, institutionId: number) {
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.load(fileBuffer as any);
     const worksheet = workbook.getWorksheet(1);
 
-    if (studyProgramId === undefined) {
+    if (institutionId === undefined) {
       throw new BadRequestException('Program studi harus dipilih.');
     }
 
@@ -309,7 +313,7 @@ export class StudentService {
               : null,
             birthplace: row.getCell(7).value?.toString(),
             gender: row.getCell(8).value?.toString() || 'Not Specified',
-            studyProgram: { connect: { id: studyProgramId } },
+            institution: { connect: { id: institutionId } },
           },
           create: {
             fullname: row.getCell(1).value?.toString() || '',
@@ -322,7 +326,7 @@ export class StudentService {
               : null,
             birthplace: row.getCell(7).value?.toString(),
             gender: row.getCell(8).value?.toString() || 'Not Specified',
-            studyProgram: { connect: { id: studyProgramId } },
+            institution: { connect: { id: institutionId } },
             user: {
               connectOrCreate: {
                 where: { email: email },

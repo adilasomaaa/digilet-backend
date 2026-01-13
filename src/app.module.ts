@@ -6,12 +6,10 @@ import { PrismaService } from './prisma/prisma.service';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesAndPermissionsGuard } from './auth/guards/roles-and-permissions.guard';
 import { ConfigModule } from '@nestjs/config';
-import { StudyProgramModule } from './study-program/study-program.module';
 import { PersonnelModule } from './personnel/personnel.module';
 import { StudentModule } from './student/student.module';
 import { OfficialModule } from './official/official.module';
 import { LetterModule } from './letter/letter.module';
-import { HeaderModule } from './header/header.module';
 import { LetterheadModule } from './letterhead/letterhead.module';
 import { LetterTemplateModule } from './letter-template/letter-template.module';
 import { LetterSignatureTemplateModule } from './letter-signature-template/letter-signature-template.module';
@@ -22,6 +20,7 @@ import { GeneralLetterSubmissionModule } from './general-letter-submission/gener
 import { DocumentSubmissionModule } from './document-submission/document-submission.module';
 import { LetterAttributeModule } from './letter-attribute/letter-attribute.module';
 import { LetterAttributeSubmissionModule } from './letter-attribute-submission/letter-attribute-submission.module';
+import { InstitutionModule } from './institution/institution.module';
 
 @Module({
   imports: [
@@ -30,12 +29,11 @@ import { LetterAttributeSubmissionModule } from './letter-attribute-submission/l
     }),
     AuthModule,
     PrismaModule,
-    StudyProgramModule,
+    InstitutionModule,
     PersonnelModule,
     StudentModule,
     OfficialModule,
     LetterModule,
-    HeaderModule,
     LetterheadModule,
     LetterTemplateModule,
     LetterSignatureTemplateModule,

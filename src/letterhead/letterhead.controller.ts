@@ -8,6 +8,9 @@ import {
   Delete,
   UseGuards,
   Query,
+  UploadedFile,
+  UseInterceptors,
+  Req,
 } from '@nestjs/common';
 import { LetterheadService } from './letterhead.service';
 import { CreateLetterheadDto } from './dto/create-letterhead.dto';
@@ -16,6 +19,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { ApiResponse } from 'src/common/helpers/api-response.helper';
 import { QueryLetterheadDto } from './dto/query-letterhead.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { FileUploadService } from 'src/common/services/file-upload.services';
 
 @Controller('api/letterhead')
 export class LetterheadController {
@@ -24,26 +29,28 @@ export class LetterheadController {
   @Post()
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
-  async create(@Body() createDto: CreateLetterheadDto) {
-    await this.letterheadService.create(createDto);
-    return ApiResponse.success('Letterhead berhasil dibuat');
-  }
-
-  @Post('/upsert')
-  @UseGuards(AuthGuard('jwt'))
-  @ApiBearerAuth('JWT-auth')
-  async upsert(@Body() createDto: CreateLetterheadDto) {
-    const response = await this.letterheadService.upsert(createDto);
-    return ApiResponse.success(response);
+  @UseInterceptors(
+    FileInterceptor(
+      'logo',
+      new FileUploadService().getImageUploadOptions('header'),
+    ),
+  )
+  async create(
+    @Body() createDto: CreateLetterheadDto,
+    @UploadedFile() logo: Express.Multer.File,
+    @Req() req: any,
+  ) {
+    await this.letterheadService.create(createDto, logo, req.user);
+    return ApiResponse.success('Kop Surat berhasil dibuat');
   }
 
   @Get()
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
-  async findAll(@Query() query: QueryLetterheadDto) {
-    const result = await this.letterheadService.findAll(query);
+  async findAll(@Query() query: QueryLetterheadDto, @Req() req: any) {
+    const result = await this.letterheadService.findAll(query, req.user);
     return ApiResponse.successWithPaginate(
-      'Letterhead berhasil diambil',
+      'Kop Surat berhasil diambil',
       result.data,
       result.meta,
     );
@@ -54,18 +61,25 @@ export class LetterheadController {
   @ApiBearerAuth('JWT-auth')
   async findOne(@Param('id') id: string) {
     const data = await this.letterheadService.findOne(+id);
-    return ApiResponse.successWithData('Letterhead berhasil diambil', data);
+    return ApiResponse.successWithData('Kop Surat berhasil diambil', data);
   }
 
   @Patch(':id')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
+  @UseInterceptors(
+    FileInterceptor(
+      'logo',
+      new FileUploadService().getImageUploadOptions('header'),
+    ),
+  )
   async update(
     @Param('id') id: string,
     @Body() updateDto: UpdateLetterheadDto,
+    @UploadedFile() logo: Express.Multer.File,
   ) {
-    await this.letterheadService.update(+id, updateDto);
-    return ApiResponse.success('Letterhead berhasil diubah');
+    await this.letterheadService.update(+id, updateDto, logo);
+    return ApiResponse.success('Kop Surat berhasil diubah');
   }
 
   @Delete(':id')
@@ -73,6 +87,6 @@ export class LetterheadController {
   @ApiBearerAuth('JWT-auth')
   async remove(@Param('id') id: string) {
     await this.letterheadService.remove(+id);
-    return ApiResponse.success('Letterhead berhasil dihapus');
+    return ApiResponse.success('Kop Surat berhasil dihapus');
   }
 }

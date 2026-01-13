@@ -13,9 +13,10 @@ export class GeneralLetterSubmissionService {
     private letterTemplateService: LetterTemplateService,
   ) {}
 
-  async create(createDto: CreateGeneralLetterSubmissionDto) {
+  async create(createDto: CreateGeneralLetterSubmissionDto, user: any) {
+    const institutionId = user.institutionId;
     return await this.prismaService.generalLetterSubmission.create({
-      data: createDto,
+      data: { ...createDto, institutionId },
     });
   }
 
@@ -105,48 +106,45 @@ export class GeneralLetterSubmissionService {
   }
 
   async printLetter(id: number, baseUrl: string = 'http://localhost:3000') {
-    const submission = await this.prismaService.generalLetterSubmission.findUnique({
-      where: { id },
-      include: {
-        user: true,
-        letter: {
-          include: {
-            letterHeads: {
-              include: {
-                header: true,
+    const submission =
+      await this.prismaService.generalLetterSubmission.findUnique({
+        where: { id },
+        include: {
+          user: true,
+          letter: {
+            include: {
+              letterHead: true,
+              letterTemplates: true,
+            },
+          },
+          letterSignatures: {
+            include: {
+              letterSignatureTemplate: {
+                include: {
+                  official: true,
+                },
               },
             },
-            letterTemplates: true,
-          },
-        },
-        letterSignatures: {
-          include: {
-            letterSignatureTemplate: {
-              include: {
-                official: true,
+            orderBy: {
+              letterSignatureTemplate: {
+                position: 'asc',
               },
             },
           },
-          orderBy: {
-            letterSignatureTemplate: {
-              position: 'asc',
+          letterAttributeSubmissions: {
+            include: {
+              letterAttribute: true,
             },
           },
         },
-        letterAttributeSubmissions: {
-          include: {
-            letterAttribute: true,
-          },
-        },
-      },
-    });
+      });
 
     if (!submission) {
       throw new NotFoundException('General letter submission tidak ditemukan');
     }
 
     // Get letterhead (header)
-    const letterhead = submission.letter.letterHeads[0]?.header;
+    const letterhead = submission.letter.letterHead;
     const letterTemplate = submission.letter.letterTemplates[0];
 
     if (!letterTemplate) {
@@ -159,7 +157,7 @@ export class GeneralLetterSubmissionService {
 
     // Prepare signatures data
     const signatures = submission.letterSignatures.map((sig) => ({
-      signature: sig.signature,
+      signature: sig.signature || undefined,
       officialName: sig.letterSignatureTemplate.official.name,
       officialPosition: sig.letterSignatureTemplate.official.occupation,
       officialNip: sig.letterSignatureTemplate.official.nip,
@@ -167,10 +165,12 @@ export class GeneralLetterSubmissionService {
     }));
 
     // Prepare letter attributes data for placeholder replacement
-    const letterAttributes = submission.letterAttributeSubmissions.map((submission) => ({
-      placeholder: submission.letterAttribute.attributeName,
-      content: submission.content,
-    }));
+    const letterAttributes = submission.letterAttributeSubmissions.map(
+      (submission) => ({
+        placeholder: submission.letterAttribute.attributeName,
+        content: submission.content,
+      }),
+    );
 
     // Generate HTML using template service
     return this.letterTemplateService.generatePrintHtml(
@@ -195,49 +195,49 @@ export class GeneralLetterSubmissionService {
     );
   }
 
-  async printLetterPdf(id: number, baseUrl: string = 'http://localhost:3000'): Promise<Buffer> {
-    const submission = await this.prismaService.generalLetterSubmission.findUnique({
-      where: { id },
-      include: {
-        user: true,
-        letter: {
-          include: {
-            letterHeads: {
-              include: {
-                header: true,
+  async printLetterPdf(
+    id: number,
+    baseUrl: string = 'http://localhost:3000',
+  ): Promise<Buffer> {
+    const submission =
+      await this.prismaService.generalLetterSubmission.findUnique({
+        where: { id },
+        include: {
+          user: true,
+          letter: {
+            include: {
+              letterHead: true,
+              letterTemplates: true,
+            },
+          },
+          letterSignatures: {
+            include: {
+              letterSignatureTemplate: {
+                include: {
+                  official: true,
+                },
               },
             },
-            letterTemplates: true,
-          },
-        },
-        letterSignatures: {
-          include: {
-            letterSignatureTemplate: {
-              include: {
-                official: true,
+            orderBy: {
+              letterSignatureTemplate: {
+                position: 'asc',
               },
             },
           },
-          orderBy: {
-            letterSignatureTemplate: {
-              position: 'asc',
+          letterAttributeSubmissions: {
+            include: {
+              letterAttribute: true,
             },
           },
         },
-        letterAttributeSubmissions: {
-          include: {
-            letterAttribute: true,
-          },
-        },
-      },
-    });
+      });
 
     if (!submission) {
       throw new NotFoundException('General letter submission tidak ditemukan');
     }
 
     // Get letterhead (header)
-    const letterhead = submission.letter.letterHeads[0]?.header;
+    const letterhead = submission.letter.letterHead;
     const letterTemplate = submission.letter.letterTemplates[0];
 
     if (!letterTemplate) {
@@ -250,7 +250,7 @@ export class GeneralLetterSubmissionService {
 
     // Prepare signatures data
     const signatures = submission.letterSignatures.map((sig) => ({
-      signature: sig.signature,
+      signature: sig.signature || undefined,
       officialName: sig.letterSignatureTemplate.official.name,
       officialPosition: sig.letterSignatureTemplate.official.occupation,
       officialNip: sig.letterSignatureTemplate.official.nip,
@@ -258,10 +258,12 @@ export class GeneralLetterSubmissionService {
     }));
 
     // Prepare letter attributes data for placeholder replacement
-    const letterAttributes = submission.letterAttributeSubmissions.map((submission) => ({
-      placeholder: submission.letterAttribute.attributeName,
-      content: submission.content,
-    }));
+    const letterAttributes = submission.letterAttributeSubmissions.map(
+      (submission) => ({
+        placeholder: submission.letterAttribute.attributeName,
+        content: submission.content,
+      }),
+    );
 
     // Generate PDF using template service
     return this.letterTemplateService.generatePdf(
@@ -281,7 +283,8 @@ export class GeneralLetterSubmissionService {
         signatures,
         letter: submission.letter,
         letterAttributes,
-      },
+        submission: submission,
+      } as any,
       baseUrl,
     );
   }

@@ -25,7 +25,13 @@ export class LetterTemplateService {
         take: Number(limit),
         where,
         orderBy: { createdAt: 'asc' },
-        include: { letter: true },
+        include: {
+          letter: {
+            include: {
+              letterAttributes: true,
+            },
+          },
+        },
       }),
       this.prismaService.letterTemplate.count({ where }),
     ]);
@@ -62,7 +68,13 @@ export class LetterTemplateService {
   async findOne(id: number) {
     const data = await this.prismaService.letterTemplate.findUnique({
       where: { id },
-      include: { letter: true },
+      include: {
+        letter: {
+          include: {
+            letterAttributes: true,
+          },
+        },
+      },
     });
     if (!data) throw new NotFoundException('LetterTemplate tidak ditemukan');
     return data;

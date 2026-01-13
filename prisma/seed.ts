@@ -24,7 +24,7 @@ async function main() {
       name: 'manage_personnels',
     },
     {
-      name: 'manage_study_programs',
+      name: 'manage_institutions',
     },
     {
       name: 'manage_officials',
@@ -68,7 +68,7 @@ async function main() {
     admin: [
       'manage_students',
       'manage_personnels',
-      'manage_study_programs',
+      'manage_institutions',
       'manage_officials',
       'manage_letters',
       'manage_letters_template',
@@ -180,14 +180,14 @@ async function main() {
     });
   }
 
-  console.log('Membuat study program ...');
+  console.log('Membuat institusi study program ...');
   const studyPrograms = [{ name: 'PIAUD' }, { name: 'Agama Islam' }];
 
   for (const studyProgram of studyPrograms) {
-    await prisma.studyProgram.upsert({
+    await prisma.institution.upsert({
       where: { name: studyProgram.name },
       update: {},
-      create: studyProgram,
+      create: { ...studyProgram, type: 'study_program' },
     });
   }
 
@@ -203,7 +203,7 @@ async function main() {
       data: {
         userId: clientUser.id,
         name: 'Operator Fakultas',
-        studyProgramId: 1,
+        institutionId: 1,
         position: 'Operator',
       },
     });

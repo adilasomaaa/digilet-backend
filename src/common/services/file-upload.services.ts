@@ -43,7 +43,7 @@ export class FileUploadService {
       storage: this.getStorage(path),
 
       limits: {
-        fileSize: 5 * 1024 * 1024,
+        fileSize: 5 * 1024 * 1024, // 5MB
       },
     };
   }
