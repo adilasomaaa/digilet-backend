@@ -4,7 +4,7 @@ import { LetterAttributeSubmissionController } from './letter-attribute-submissi
 import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
-    imports: [PrismaModule],
+  imports: [PrismaModule],
   controllers: [LetterAttributeSubmissionController],
   providers: [LetterAttributeSubmissionService],
 })

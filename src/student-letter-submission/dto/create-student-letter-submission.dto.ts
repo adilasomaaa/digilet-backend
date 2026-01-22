@@ -1,21 +1,11 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
-  IsString,
 } from 'class-validator';
-import { StudentLetterStatus } from '@prisma/client';
 
 export class CreateStudentLetterSubmissionDto {
-  @ApiProperty({
-    description: 'ID dari student',
-  })
-  @IsNotEmpty()
-  @IsNumber()
-  studentId: number;
-
   @ApiProperty({
     description: 'ID dari letter',
   })
@@ -23,19 +13,17 @@ export class CreateStudentLetterSubmissionDto {
   @IsNumber()
   letterId: number;
 
-  @ApiPropertyOptional({
-    description: 'Nomor surat',
+  @ApiProperty({
+    description: 'Daftar jawaban untuk atribut kustom',
+    example: [{ attributeId: 1, content: 'Keperluan Dinas' }],
   })
   @IsOptional()
-  @IsString()
-  letterNumber?: string;
+  attributes?: { attributeId: number; content: string }[] | string;
 
   @ApiProperty({
-    description: 'Status surat',
-    enum: StudentLetterStatus,
-    default: StudentLetterStatus.pending,
+    description: 'Daftar dokumen untuk atribut kustom',
+    example: [{ letterDocumentId: 1, file: 'Keperluan Dinas' }],
   })
-  @IsNotEmpty()
-  @IsEnum(StudentLetterStatus)
-  status: StudentLetterStatus;
+  @IsOptional()
+  documents?: { letterDocumentId: number; file: string }[] | string;
 }

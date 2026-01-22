@@ -4,7 +4,7 @@ import { LetterAttributeController } from './letter-attribute.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
-    imports: [PrismaModule],
+  imports: [PrismaModule],
   controllers: [LetterAttributeController],
   providers: [LetterAttributeService],
 })

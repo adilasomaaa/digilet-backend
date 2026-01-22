@@ -5,7 +5,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { QueryLetterAttributeSubmissionDto } from './dto/query-letter-attribute-submission.dto';
 import { Prisma } from '@prisma/client';
 
-
 @Injectable()
 export class LetterAttributeSubmissionService {
   constructor(private prismaService: PrismaService) {}
@@ -17,7 +16,14 @@ export class LetterAttributeSubmissionService {
   }
 
   async findAll(query: QueryLetterAttributeSubmissionDto) {
-    const { page , limit , search, letterAttributeId, studentLetterSubmissionId, generalLetterSubmissionId } = query;
+    const {
+      page,
+      limit,
+      search,
+      letterAttributeId,
+      studentLetterSubmissionId,
+      generalLetterSubmissionId,
+    } = query;
 
     const where: Prisma.LetterAttributeSubmissionWhereInput = {};
 
@@ -26,8 +32,10 @@ export class LetterAttributeSubmissionService {
     }
 
     if (letterAttributeId) where.letterAttributeId = letterAttributeId;
-    if (studentLetterSubmissionId) where.studentLetterSubmissionId = studentLetterSubmissionId;
-    if (generalLetterSubmissionId) where.generalLetterSubmissionId = generalLetterSubmissionId;
+    if (studentLetterSubmissionId)
+      where.studentLetterSubmissionId = studentLetterSubmissionId;
+    if (generalLetterSubmissionId)
+      where.generalLetterSubmissionId = generalLetterSubmissionId;
 
     const [data, total] = await this.prismaService.$transaction([
       this.prismaService.letterAttributeSubmission.findMany({
@@ -54,7 +62,9 @@ export class LetterAttributeSubmissionService {
       where: { id },
     });
     if (!data) {
-      throw new NotFoundException('Letter-Attribute-Submission tidak ditemukan');
+      throw new NotFoundException(
+        'Letter-Attribute-Submission tidak ditemukan',
+      );
     }
     return data;
   }

@@ -5,7 +5,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { QueryLetterAttributeDto } from './dto/query-letter-attribute.dto';
 import { Prisma } from '@prisma/client';
 
-
 @Injectable()
 export class LetterAttributeService {
   constructor(private prismaService: PrismaService) {}
@@ -17,7 +16,7 @@ export class LetterAttributeService {
   }
 
   async findAll(query: QueryLetterAttributeDto) {
-    const { page , limit , search, isEditable, letterId} = query;
+    const { page, limit, search, isEditable, letterId } = query;
 
     const where: Prisma.LetterAttributeWhereInput = {};
 
@@ -25,8 +24,8 @@ export class LetterAttributeService {
       where.OR = [{ attributeName: { contains: search } }];
     }
 
-    if(letterId) where.letterId = letterId;
-    if(isEditable) where.isEditable = isEditable;
+    if (letterId) where.letterId = letterId;
+    if (isEditable) where.isEditable = isEditable;
 
     const [data, total] = await this.prismaService.$transaction([
       this.prismaService.letterAttribute.findMany({
@@ -36,7 +35,7 @@ export class LetterAttributeService {
         include: { letter: true },
         where,
       }),
-      this.prismaService.letterAttribute.count({where}),
+      this.prismaService.letterAttribute.count({ where }),
     ]);
 
     return {

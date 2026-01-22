@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsString, IsOptional } from 'class-validator';
+import { IsInt, IsString, IsOptional, IsBoolean } from 'class-validator';
 
 export class CreateLetterSignatureTemplateDto {
   @ApiProperty({
@@ -24,4 +24,13 @@ export class CreateLetterSignatureTemplateDto {
   @IsString()
   @IsOptional()
   position?: string;
+
+  @ApiProperty({
+    example: true,
+    description: 'Apakah pejabat ini mengetahui surat ini?',
+    required: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  isAcknowledged?: boolean;
 }

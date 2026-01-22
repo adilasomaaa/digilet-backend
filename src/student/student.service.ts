@@ -56,7 +56,7 @@ export class StudentService {
       async (tx) => {
         const newUser = await tx.user.create({
           data: {
-            email,
+            email: nim,
             name: createDto.fullname,
             password: hashedPassword,
           },
@@ -331,7 +331,7 @@ export class StudentService {
               connectOrCreate: {
                 where: { email: email },
                 create: {
-                  email: email,
+                  email: nim,
                   name: row.getCell(1).value?.toString() || '',
                   password: await this.hashPassword(nim),
                   userRoles: {

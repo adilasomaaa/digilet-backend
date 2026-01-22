@@ -69,4 +69,58 @@ export class FileUploadService {
       },
     };
   }
+
+  public getDynamicFileUploadOptions(
+    path: string,
+    allowedFileTypes: string[],
+  ): MulterOptions {
+    return {
+      fileFilter: (req, file, cb) => {
+        // Convert file types to mime types
+        const allowedMimeTypes = allowedFileTypes
+          .map((type) => {
+            switch (type.toLowerCase()) {
+              case 'pdf':
+                return 'application/pdf';
+              case 'jpg':
+              case 'jpeg':
+                return ['image/jpeg', 'image/jpg'];
+              case 'png':
+                return 'image/png';
+              case 'gif':
+                return 'image/gif';
+              case 'doc':
+                return 'application/msword';
+              case 'docx':
+                return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+              case 'xls':
+                return 'application/vnd.ms-excel';
+              case 'xlsx':
+                return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+              case 'txt':
+                return 'text/plain';
+              default:
+                return type; // If it's already a mime type, use as is
+            }
+          })
+          .flat();
+
+        if (allowedMimeTypes.includes(file.mimetype)) {
+          cb(null, true);
+        } else {
+          cb(
+            new BadRequestException(
+              `File tidak valid. Hanya format ${allowedFileTypes.join(', ')} yang diizinkan.`,
+            ),
+            false,
+          );
+        }
+      },
+      storage: this.getStorage(path),
+
+      limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB default
+      },
+    };
+  }
 }

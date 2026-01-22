@@ -1,6 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { SignatureType } from '@prisma/client';
 import {
+  IsArray,
   IsDateString,
+  IsIn,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -8,13 +11,6 @@ import {
 } from 'class-validator';
 
 export class CreateGeneralLetterSubmissionDto {
-  @ApiProperty({
-    description: 'ID dari user',
-  })
-  @IsNotEmpty()
-  @IsNumber()
-  userId: number;
-
   @ApiProperty({
     description: 'ID dari letter',
   })
@@ -37,17 +33,35 @@ export class CreateGeneralLetterSubmissionDto {
 
   @ApiProperty({
     example: '2000-01-01',
-    description: 'Birthday',
+    description: 'Letter Date',
     required: false,
   })
   @IsDateString(
     {},
     {
       message:
-        'Tanggal lahir harus berupa format tanggal yang valid, contoh: 2000-01-01',
+        'Tanggal Surat harus berupa format tanggal yang valid, contoh: 2000-01-01',
     },
   )
-  @IsOptional() // Tambahkan ini karena required: false di Swagger
-  @IsString({ message: 'Tanggal lahir harus berupa teks' })
+  @IsOptional()
+  @IsString({ message: 'Tanggal Surat harus berupa teks' })
   letterDate?: string;
+
+  @ApiProperty({
+    description: 'Daftar jawaban untuk atribut kustom',
+    example: [{ attributeId: 1, content: 'Keperluan Dinas' }],
+  })
+  @IsOptional()
+  @IsArray()
+  attributes?: { attributeId: number; content: string }[];
+
+  @ApiProperty({
+    description: 'jenis tanda tangan',
+    enum: ['barcode', 'digital'],
+  })
+  @IsNotEmpty({ message: 'jenis tanda tangan tidak boleh kosong' })
+  @IsIn(['barcode', 'digital'], {
+    message: 'tipe harus berupa barcode atau digital',
+  })
+  signatureType: SignatureType;
 }

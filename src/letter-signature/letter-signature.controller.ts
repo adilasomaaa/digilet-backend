@@ -54,15 +54,31 @@ export class LetterSignatureController {
     );
   }
 
+  @Get('/find-by-token/:token')
+  @Public()
+  async findByToken(@Param('token') token: string) {
+    const data = await this.letterSignatureService.findByToken(token);
+    return ApiResponse.successWithData(
+      'Letter signature berhasil diambil',
+      data,
+    );
+  }
+
   @Patch(':id')
-  @UseGuards(AuthGuard('jwt'))
-  @ApiBearerAuth('JWT-auth')
+  @Public()
   async update(
     @Param('id') id: string,
     @Body() updateDto: UpdateLetterSignatureDto,
   ) {
     await this.letterSignatureService.update(+id, updateDto);
     return ApiResponse.success('Letter signature berhasil diubah');
+  }
+
+  @Patch('reset/:id')
+  @Public()
+  async reset(@Param('id') id: string) {
+    await this.letterSignatureService.reset(+id);
+    return ApiResponse.success('Tanda tangan berhasil direset');
   }
 
   @Delete(':id')

@@ -37,8 +37,12 @@ export class LetterService {
       where.category = category;
     }
 
-    if (user.roles.name !== 'admin') {
+    if (user.roles.name === 'personnel') {
       where.institutionId = user.personnel.institutionId;
+    }
+
+    if (user.roles.name === 'student') {
+      where.category = 'study_program';
     }
 
     const [data, total] = await this.prismaService.$transaction([
@@ -55,6 +59,7 @@ export class LetterService {
           },
           institution: true,
           letterHead: true,
+          letterAttributes: true,
         },
       }),
       this.prismaService.letter.count(),
@@ -82,6 +87,8 @@ export class LetterService {
         },
         institution: true,
         letterHead: true,
+        letterAttributes: true,
+        letterDocuments: true,
       },
     });
     if (!data) {

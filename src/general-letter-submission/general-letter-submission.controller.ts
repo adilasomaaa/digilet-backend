@@ -19,6 +19,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { ApiResponse } from 'src/common/helpers/api-response.helper';
 import { QueryGeneralLetterSubmissionDto } from './dto/query-general-letter-submission.dto';
 import type { Response, Request } from 'express';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('api/general-letter-submission')
 export class GeneralLetterSubmissionController {
@@ -40,8 +41,14 @@ export class GeneralLetterSubmissionController {
   @Get()
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
-  async findAll(@Query() query: QueryGeneralLetterSubmissionDto) {
-    const result = await this.generalLetterSubmissionService.findAll(query);
+  async findAll(
+    @Query() query: QueryGeneralLetterSubmissionDto,
+    @Req() req: any,
+  ) {
+    const result = await this.generalLetterSubmissionService.findAll(
+      query,
+      req.user,
+    );
     return ApiResponse.successWithPaginate(
       'General letter submission berhasil diambil',
       result.data,
@@ -66,22 +73,24 @@ export class GeneralLetterSubmissionController {
     return res.send(html);
   }
 
-  @Get(':id/print-pdf')
-  @UseGuards(AuthGuard('jwt'))
-  @ApiBearerAuth('JWT-auth')
+  @Get(':token/print-pdf')
+  @Public()
   async printPdf(
-    @Param('id') id: string,
+    @Param('token') token: string,
     @Req() req: Request,
     @Res() res: Response,
   ) {
     const baseUrl = `${req.protocol}://${req.get('host')}`;
     const pdfBuffer = await this.generalLetterSubmissionService.printLetterPdf(
-      +id,
+      token,
       baseUrl,
     );
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename="surat-${id}.pdf"`);
+    res.setHeader(
+      'Content-Disposition',
+      `inline; filename="surat-${token}.pdf"`,
+    );
     return res.send(pdfBuffer);
   }
 

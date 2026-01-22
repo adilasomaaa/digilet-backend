@@ -1,10 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateStudentLetterSubmissionDto } from './dto/create-student-letter-submission.dto';
 import { UpdateStudentLetterSubmissionDto } from './dto/update-student-letter-submission.dto';
+import { VerifyStudentLetterSubmissionDto } from './dto/verify-student-letter-submission.dto';
+import { ChangeStatusStudentLetterSubmissionDto } from './dto/change-status-student-letter-submission.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { QueryStudentLetterSubmissionDto } from './dto/query-student-letter-submission.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, SignatureType } from '@prisma/client';
 import { LetterTemplateService } from 'src/common/services/letter-template.service';
+import { randomUUID } from 'crypto';
+import * as fs from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class StudentLetterSubmissionService {
@@ -13,13 +22,240 @@ export class StudentLetterSubmissionService {
     private letterTemplateService: LetterTemplateService,
   ) {}
 
-  async create(createDto: CreateStudentLetterSubmissionDto) {
+  async create(
+    createDto: CreateStudentLetterSubmissionDto,
+    user: any,
+    files?: Express.Multer.File[],
+  ) {
+    const { letterId } = createDto;
+
+    const student = await this.prismaService.student.findUnique({
+      where: { id: user.student.id },
+      include: { user: true, institution: true },
+    });
+
+    if (!student) {
+      throw new NotFoundException('Mahasiswa tidak ditemukan');
+    }
+
+    const institutionId = student.institutionId;
+
+    const requiredAttributes =
+      await this.prismaService.letterAttribute.findMany({
+        where: {
+          letterId: letterId,
+          isRequired: true,
+        },
+      });
+
+    const attributesArray = Array.isArray(createDto.attributes)
+      ? createDto.attributes
+      : [];
+    const documentsArray = Array.isArray(createDto.documents)
+      ? createDto.documents
+      : [];
+
+    for (const attr of requiredAttributes) {
+      const isProvided = attributesArray?.find(
+        (a) => a.attributeId === attr.id && a.content?.trim() !== '',
+      );
+      if (!isProvided) {
+        throw new BadRequestException(
+          `Atribut "${attr.attributeName}" wajib diisi.`,
+        );
+      }
+    }
+
+    const requiredDocuments = await this.prismaService.letterDocument.findMany({
+      where: {
+        letterId: letterId,
+        isRequired: true,
+      },
+    });
+
+    const allLetterDocuments = await this.prismaService.letterDocument.findMany(
+      {
+        where: {
+          letterId: letterId,
+        },
+      },
+    );
+
+    const requiredDocumentCount = requiredDocuments.length;
+    if (files && files.length !== requiredDocumentCount) {
+      files.forEach((file) => {
+        if (fs.existsSync(join(process.cwd(), file.path))) {
+          fs.unlinkSync(join(process.cwd(), file.path));
+        }
+      });
+      throw new BadRequestException(
+        `Jumlah file yang diupload (${files.length}) tidak sesuai dengan dokumen yang diperlukan (${requiredDocumentCount}).`,
+      );
+    }
+
+    for (let i = 0; i < requiredDocuments.length; i++) {
+      const document = requiredDocuments[i];
+      const file = files?.[i];
+
+      if (!file) {
+        throw new BadRequestException(
+          `Dokumen "${document.documentName}" wajib diupload.`,
+        );
+      }
+
+      const expectedFileType = document.fileType.toLowerCase();
+      const actualFileType = file.mimetype;
+
+      let isValidType = false;
+      switch (expectedFileType) {
+        case 'pdf':
+          isValidType = actualFileType === 'application/pdf';
+          break;
+        case 'jpg':
+        case 'jpeg':
+          isValidType =
+            actualFileType === 'image/jpeg' || actualFileType === 'image/jpg';
+          break;
+        case 'png':
+          isValidType = actualFileType === 'image/png';
+          break;
+        case 'gif':
+          isValidType = actualFileType === 'image/gif';
+          break;
+        case 'doc':
+          isValidType = actualFileType === 'application/msword';
+          break;
+        case 'docx':
+          isValidType =
+            actualFileType ===
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+          break;
+        case 'xls':
+          isValidType = actualFileType === 'application/vnd.ms-excel';
+          break;
+        case 'xlsx':
+          isValidType =
+            actualFileType ===
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+          break;
+        case 'txt':
+          isValidType = actualFileType === 'text/plain';
+          break;
+        default:
+          isValidType = true;
+          break;
+      }
+
+      if (!isValidType) {
+        files.forEach((f) => {
+          if (fs.existsSync(join(process.cwd(), f.path))) {
+            fs.unlinkSync(join(process.cwd(), f.path));
+          }
+        });
+        throw new BadRequestException(
+          `File untuk dokumen "${document.documentName}" harus berformat ${expectedFileType.toUpperCase()}.`,
+        );
+      }
+    }
+
+    if (!institutionId) {
+      throw new BadRequestException(
+        'User ini tidak terasosiasi dengan institusi manapun.',
+      );
+    }
+
+    const letterSignatureTemplates =
+      await this.prismaService.letterSignatureTemplate.findMany({
+        where: {
+          letterId: letterId,
+        },
+      });
+
+    const letterSignatureSubmissions = letterSignatureTemplates.map(
+      (template) => ({
+        token: randomUUID(),
+        code: Math.floor(100000 + Math.random() * 900000)
+          .toString()
+          .slice(-6),
+        letterSignatureTemplate: {
+          connect: { id: template.id },
+        },
+      }),
+    );
+
+    const letter = await this.prismaService.letter.findUnique({
+      where: {
+        id: letterId,
+      },
+    });
+
+    const token = randomUUID();
+    const name =
+      letter?.letterName + ' - ' + student.fullname + '(' + student.nim + ')';
+
+    const submissionData = {
+      token,
+      name,
+      letterId,
+      status: 'pending' as const,
+      studentId: student.id,
+    };
+
+    const documentSubmissions: {
+      letterDocumentId: number;
+      filePath: string;
+    }[] = [];
+    if (files && documentsArray) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const documentInfo = documentsArray[i];
+
+        if (documentInfo && file) {
+          const fullPath = file.path;
+          const cleanedPath = fullPath.replace('public/', '');
+
+          documentSubmissions.push({
+            letterDocumentId: documentInfo.letterDocumentId,
+            filePath: cleanedPath,
+          });
+        }
+      }
+    }
+
+    const letterAttributeSubmissions: {
+      letterAttributeId: number;
+      content: string;
+    }[] = [];
+    if (attributesArray) {
+      for (const attr of attributesArray) {
+        letterAttributeSubmissions.push({
+          letterAttributeId: attr.attributeId,
+          content: attr.content,
+        });
+      }
+    }
+
     return await this.prismaService.studentLetterSubmission.create({
-      data: createDto,
+      data: {
+        ...submissionData,
+        documentSubmissions: {
+          create: documentSubmissions,
+        },
+        letterAttributeSubmissions: {
+          create: letterAttributeSubmissions,
+        },
+        letterSignatures: {
+          create: letterSignatureSubmissions
+        }
+      },
+      include: {
+        documentSubmissions: true,
+        letterAttributeSubmissions: true,
+      },
     });
   }
 
-  async findAll(query: QueryStudentLetterSubmissionDto) {
+  async findAll(query: QueryStudentLetterSubmissionDto, user: any) {
     const { page, limit, search } = query;
 
     const where: Prisma.StudentLetterSubmissionWhereInput = {};
@@ -32,11 +268,21 @@ export class StudentLetterSubmissionService {
       ];
     }
 
+    if (user.roles.name === 'personnel') {
+      where.letter = {
+        institutionId: user.personnel.institutionId,
+      };
+    }
+
+    if (user.roles.name === 'student') {
+      where.studentId = user.student.id;
+    }
+
     const [data, total] = await this.prismaService.$transaction([
       this.prismaService.studentLetterSubmission.findMany({
         skip: (Number(page) - 1) * Number(limit),
         take: Number(limit),
-        orderBy: { createdAt: 'asc' },
+        orderBy: { createdAt: 'desc' },
         where,
         include: {
           student: {
@@ -45,7 +291,11 @@ export class StudentLetterSubmissionService {
               institution: true,
             },
           },
-          letter: true,
+          letter: {
+            include: {
+              institution: true,
+            },
+          },
           letterSignatures: {
             include: {
               letterSignatureTemplate: {
@@ -58,6 +308,11 @@ export class StudentLetterSubmissionService {
           documentSubmissions: {
             include: {
               letterDocument: true,
+            },
+          },
+          letterAttributeSubmissions: {
+            include: {
+              letterAttribute: true,
             },
           },
         },
@@ -101,6 +356,11 @@ export class StudentLetterSubmissionService {
             letterDocument: true,
           },
         },
+        letterAttributeSubmissions: {
+          include: {
+            letterAttribute: true,
+          },
+        },
       },
     });
     if (!data) {
@@ -109,11 +369,131 @@ export class StudentLetterSubmissionService {
     return data;
   }
 
-  async update(id: number, updateDto: UpdateStudentLetterSubmissionDto) {
-    await this.findOne(id);
+  async update(
+    id: number,
+    updateDto: UpdateStudentLetterSubmissionDto,
+    user: any,
+    files?: Express.Multer.File[],
+  ) {
+    const submission = await this.findOne(id);
+    const { attributes, documents, ...rest } = updateDto;
+
+    const attributesArray = Array.isArray(attributes) ? attributes : [];
+    const documentsArray = Array.isArray(documents) ? documents : [];
+
+    if (attributesArray.length > 0) {
+      for (const attr of attributesArray) {
+        const existingAttr = submission.letterAttributeSubmissions.find(
+          (a) => a.letterAttributeId === attr.attributeId,
+        );
+
+        if (existingAttr) {
+          await this.prismaService.letterAttributeSubmission.update({
+            where: { id: existingAttr.id },
+            data: { content: attr.content },
+          });
+        }
+      }
+    }
+
+    if (files && files.length > 0 && documentsArray.length > 0) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const documentInfo = documentsArray[i];
+
+        if (documentInfo && file) {
+          const fullPath = file.path;
+          const cleanedPath = fullPath.replace('public/', '');
+
+          const existingDoc = submission.documentSubmissions.find(
+            (d) => d.letterDocumentId === documentInfo.letterDocumentId,
+          );
+
+          if (existingDoc) {
+            const oldPath = join(process.cwd(), 'public', existingDoc.filePath);
+            if (fs.existsSync(oldPath)) {
+              fs.unlinkSync(oldPath);
+            }
+            await this.prismaService.documentSubmission.update({
+              where: { id: existingDoc.id },
+              data: { filePath: cleanedPath },
+            });
+          } else {
+            await this.prismaService.documentSubmission.create({
+              data: {
+                studentLetterSubmissionId: id,
+                letterDocumentId: documentInfo.letterDocumentId,
+                filePath: cleanedPath,
+              },
+            });
+          }
+        }
+      }
+    }
+
     return await this.prismaService.studentLetterSubmission.update({
       where: { id },
-      data: updateDto,
+      data: rest,
+    });
+  }
+
+  async verify(
+    id: number,
+    verifyDto: VerifyStudentLetterSubmissionDto,
+    user: any,
+  ) {
+    if (user.roles.name !== 'personnel') {
+      throw new BadRequestException(
+        'Hanya personnel yang dapat melakukan verifikasi',
+      );
+    }
+
+    const { attributes, letterDate, ...rest } = verifyDto;
+    const attributesArray = Array.isArray(attributes) ? attributes : [];
+
+    const submission = await this.findOne(id);
+
+    // Update attributes if provided
+    if (attributesArray.length > 0) {
+      for (const attr of attributesArray) {
+        const existingAttr = submission.letterAttributeSubmissions.find(
+          (a) => a.letterAttributeId === attr.attributeId,
+        );
+        if (existingAttr) {
+          await this.prismaService.letterAttributeSubmission.update({
+            where: { id: existingAttr.id },
+            data: { content: attr.content },
+          });
+        }
+      }
+    }
+
+    return await this.prismaService.studentLetterSubmission.update({
+      where: { id },
+      data: {
+        letterDate: new Date(letterDate),
+        ...rest,
+        status: 'waiting_signature',
+      },
+    });
+  }
+
+  async changeStatus(
+    id: number,
+    changeStatusDto: ChangeStatusStudentLetterSubmissionDto,
+    user: any,
+  ) {
+    if (user.roles.name !== 'personnel') {
+      throw new BadRequestException(
+        'Hanya personnel yang dapat mengubah status',
+      );
+    }
+
+    return await this.prismaService.studentLetterSubmission.update({
+      where: { id },
+      data: {
+        status: changeStatusDto.status,
+      },
     });
   }
 
@@ -218,12 +598,12 @@ export class StudentLetterSubmissionService {
   }
 
   async printLetterPdf(
-    id: number,
+    token: string,
     baseUrl: string = 'http://localhost:3000',
   ): Promise<Buffer> {
     const submission =
       await this.prismaService.studentLetterSubmission.findUnique({
-        where: { id },
+        where: { token },
         include: {
           student: {
             include: {
@@ -286,6 +666,7 @@ export class StudentLetterSubmissionService {
       officialPosition: sig.letterSignatureTemplate.official.occupation,
       officialNip: sig.letterSignatureTemplate.official.nip,
       position: sig.letterSignatureTemplate.position || 'right',
+      isAcknowledged: sig.letterSignatureTemplate.isAcknowledged,
     }));
 
     // Prepare letter attributes data for placeholder replacement

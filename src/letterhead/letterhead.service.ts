@@ -102,7 +102,7 @@ export class LetterheadService {
     updateDto: UpdateLetterheadDto,
     logo?: Express.Multer.File,
   ) {
-    let data = await this.findOne(id);
+    const data = await this.findOne(id);
     if (logo) {
       const fullPath = logo.path;
       const cleanedPath = fullPath.replace('public/', '');

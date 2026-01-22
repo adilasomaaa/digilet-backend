@@ -48,7 +48,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   personnel                Personnel?
-  student                  Student[]
+  student                  Student?
   userRoles                UserRoles[]
   activeTokens             ActiveToken[]
   generalLetterSubmissions GeneralLetterSubmission[]
@@ -174,11 +174,10 @@ model Letter {
   letterHeadId         Int?
   letterHead           LetterHead?    @relation(fields: [letterHeadId], references: [id])
   letterName           String
-  referenceNumber      String
-  expiredDate          Int
-  letterNumberingStart Int
+  referenceNumber      String?
+  expiredDate          Int?
+  letterNumberingStart Int?
   category             LetterCategory
-  signatureType        SignatureType
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
 
@@ -224,6 +223,7 @@ model LetterSignatureTemplate {
   official         Official          @relation(fields: [officialId], references: [id], onDelete: Cascade)
   position         String            @default("right")
   token            String?
+  isAcknowledged   Boolean           @default(false)
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   letterSignatures LetterSignature[]
@@ -231,12 +231,15 @@ model LetterSignatureTemplate {
 
 model StudentLetterSubmission {
   id                         Int                         @id @default(autoincrement())
+  token                      String                      @unique
   studentId                  Int
   student                    Student                     @relation(fields: [studentId], references: [id])
   letterId                   Int
   letter                     Letter                      @relation(fields: [letterId], references: [id])
   letterNumber               String?
   letterDate                 DateTime?
+  name                       String?
+  signatureType              SignatureType?
   status                     StudentLetterStatus
   createdAt                  DateTime                    @default(now())
   updatedAt                  DateTime                    @updatedAt
@@ -247,6 +250,7 @@ model StudentLetterSubmission {
 
 model GeneralLetterSubmission {
   id                         Int                         @id @default(autoincrement())
+  token                      String                      @unique
   userId                     Int
   user                       User                        @relation(fields: [userId], references: [id])
   institutionId              Int
@@ -256,6 +260,7 @@ model GeneralLetterSubmission {
   letterNumber               String?
   name                       String?
   letterDate                 DateTime?
+  signatureType              SignatureType
   createdAt                  DateTime                    @default(now())
   updatedAt                  DateTime                    @updatedAt
   letterSignatures           LetterSignature[]
@@ -270,9 +275,10 @@ model LetterSignature {
   generalLetterSubmission   GeneralLetterSubmission? @relation(fields: [generalLetterSubmissionId], references: [id], onDelete: Cascade)
   letterSignatureTemplateId Int
   letterSignatureTemplate   LetterSignatureTemplate  @relation(fields: [letterSignatureTemplateId], references: [id], onDelete: Cascade)
-  signature                 String?
+  signature                 String?                  @db.LongText
   verifiedAt                DateTime?
   token                     String
+  code                      String
   createdAt                 DateTime                 @default(now())
   updatedAt                 DateTime                 @updatedAt
 }

@@ -12,12 +12,14 @@ interface LetterPrintData {
   recipientInfo?: string[];
   letterContent: string;
   letterhead?: any;
+  signatureType?: 'barcode' | 'digital';
   signatures: Array<{
     signature?: string;
     officialName: string;
     officialPosition: string;
     officialNip: string;
     position: string;
+    isAcknowledged: boolean;
   }>;
   // Data untuk placeholder replacement
   student?: any; // Student data
@@ -46,7 +48,8 @@ export class LetterTemplateService {
 
   private readonly submissionMapping = {
     nomor_surat: 'letterNumber',
-    tanggal_surat: 'letterDate', // Akan diformat nantinya
+    tanggal_surat: 'letterDate',
+    tanggal_hijriah: 'letterDateHijri'
   };
 
   generatePrintHtml(data: LetterPrintData, baseUrl: string): string {
@@ -56,16 +59,11 @@ export class LetterTemplateService {
       recipientInfo,
       letterContent,
       letterhead,
-      signatures,
     } = data;
 
-    // Replace placeholders in letter content
-    const processedContent = this.replacePlaceholders(
-      letterContent,
-      data.student,
-      data.letter,
-      data.letterAttributes || [],
-    );
+    const { signatures, signatureType } = data;
+
+    const processedContent = this.replacePlaceholders(letterContent, data);
 
     return `
 <!DOCTYPE html>
@@ -77,7 +75,7 @@ export class LetterTemplateService {
     <style>
         @media print {
             @page {
-                margin: 2cm;
+                margin: 1cm 2cm;
             }
             body {
                 margin: 0;
@@ -92,7 +90,6 @@ export class LetterTemplateService {
             align-items: center;
             border-bottom: 4px double #000;
             padding-bottom: 10px;
-            margin-bottom: 20px;
         }
         .header-logo {
             flex: 0 0 80px; /* Lebar area logo */
@@ -106,6 +103,7 @@ export class LetterTemplateService {
         .header-text {
             flex: 1;
             text-align: center;
+            line-height:1.2;
             /* Kompensasi agar teks tetap di tengah meskipun ada logo di kiri */
             margin-right: 80px; 
         }
@@ -117,7 +115,7 @@ export class LetterTemplateService {
             font-size: 12pt;
             line-height: 1.6;
             margin: 0;
-            padding: 20px;
+            // padding: 20px;
             color: #000;
         }
         .letter-container {
@@ -149,55 +147,103 @@ export class LetterTemplateService {
         }
         .letterhead p {
             font-size: 11pt;
-            margin: 3px 0;
+            margin: 1px 0;
         }
         .letter-info {
             margin-bottom: 20px;
         }
         .letter-info p {
-            margin: 5px 0;
+            margin: 0px 0;
         }
         .letter-content {
             text-align: justify;
-            margin-bottom: 30px;
+            margin-bottom: 5px;
             min-height: 200px;
         }
+
+        /* 2. Menghilangkan indentasi otomatis jika Anda menggunakan tabel untuk layout */
         .letter-content p {
-            margin-bottom: 10px;
-            text-indent: 50px;
+            margin-top: 0 !important;
+            margin-bottom: 2px !important; 
+            line-height: 1.5 !important;
+        }
+
+        /* 3. Atur Tabel agar tidak memiliki border secara default (untuk Tabel Informasi) */
+        .letter-content figure.table {
+            margin: 10px 0 !important;
+            width: 100% !important;
+        }
+
+        .letter-content figure.table p {
+            margin: 0 !important;
+            text-indent: 0 !important;
+        }
+
+        .letter-content p {
+            text-indent: 35px;
+        }
+
+        .letter-content table {
+            width: 100% !important;
+            border-collapse: collapse;
+            border: none !important; /* Menghilangkan border luar tabel */
+        }
+
+        .letter-content table td {
+            border: none !important;    /* Menghilangkan garis antar sel */
+            padding: 2px 4px !important; /* Spasi lebih rapat sesuai referensi */
+            vertical-align: top;
+        }
+        .letter-content table td, strong {
+            margin:0!important;
+        }
+
+        /* 4. Selector khusus jika Anda ingin membuat tabel yang MEMANG pakai border (misal: daftar nilai) */
+        .letter-content table.with-border, 
+        .letter-content table.with-border td {
+            border: 1px solid #000 !important;
         }
         .signatures {
-            margin-top: 50px;
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
+          display: grid;
+          grid-template-columns: repeat(3, 1fr); /* 3 Kolom */
+          grid-template-rows: auto auto;         /* 2 Baris */
+          gap: 5px;
         }
+
+        /* Mapping posisi berdasarkan label value */
+        .sig-kiri-atas   { grid-column: 1; grid-row: 1; }
+        .sig-tengah-atas  { grid-column: 2; grid-row: 1; }
+        .sig-kanan-atas  { grid-column: 3; grid-row: 1; }
+        .sig-kiri-bawah  { grid-column: 1; grid-row: 2; }
+        .sig-tengah-bawah { grid-column: 2; grid-row: 2; }
+        .sig-kanan-bawah { grid-column: 3; grid-row: 2; }
+
         .signature-block {
             text-align: center;
-            min-width: 200px;
-            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .acknowledgment-text {
+            font-weight: bold;
         }
         .signature-block .signature-image {
             max-width: 150px;
-            max-height: 80px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
+            max-height: 75px;
+            border:1px solid #000;
         }
         .signature-block .official-name {
             font-weight: bold;
-            margin-top: 5px;
-            border-top: 1px solid #000;
             padding-top: 5px;
             display: inline-block;
             min-width: 150px;
         }
         .signature-block .official-position {
-            font-size: 10pt;
-            margin-top: 5px;
+            font-weight: bold;
         }
         .signature-block .official-nip {
             font-size: 10pt;
-            margin-top: 3px;
         }
         .print-button {
             text-align: center;
@@ -214,6 +260,35 @@ export class LetterTemplateService {
         }
         .print-button button:hover {
             background-color: #0056b3;
+        }
+        .signature-wrapper {
+            height: 65px; /* Area penampung yang lebih tinggi */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Style untuk Tanda Tangan Digital (Signature Pad) */
+        .signature-img.signature-digital {
+            max-height: 250px !important; /* Diperbesar dari sebelumnya 80px */
+            max-width: 250px;
+            width: auto;
+            object-fit: contain;
+            /* Memberikan sedikit filter agar goresan hitam lebih pekat saat diprint */
+            filter: contrast(1.2) brightness(0.9); 
+        }
+
+        /* Style untuk Barcode / QR Code */
+        .signature-img.signature-barcode {
+            max-height: 70px !important; /* QR Code tetap ringkas agar tidak dominan */
+            width: auto;
+            padding: 5px;
+            background: white;
+        }
+
+        .signature-block .official-name {
+            font-weight: bold;
+            font-size: 12pt;
         }
     </style>
 </head>
@@ -250,28 +325,41 @@ export class LetterTemplateService {
         </div>
 
         <div class="signatures">
-            ${signatures
-              .map((sig) => {
-                const signaturePath = sig.signature
-                  ? this.getImagePath(sig.signature, baseUrl)
-                  : '';
-                const position = sig.position || 'right';
-                const positionStyle =
-                  position === 'left'
-                    ? 'left'
-                    : position === 'center'
-                      ? 'center'
-                      : 'right';
-                return `
-                <div class="signature-block" style="text-align: ${positionStyle};">
-                    ${signaturePath ? `<img src="${signaturePath}" alt="Signature" class="signature-image" />` : ''}
-                    <div class="official-name">${this.escapeHtml(sig.officialName)}</div>
-                    <div class="official-position">${this.escapeHtml(sig.officialPosition)}</div>
-                    <div class="official-nip">NIP. ${this.escapeHtml(sig.officialNip)}</div>
-                </div>
-              `;
-              })
-              .join('')}
+          ${signatures
+            .map((sig: any) => {
+              console.log(sig.isAcknowledged);
+              
+              const isBase64 = sig.signature?.startsWith('data:image');
+              const signatureSrc = sig.signature
+                ? isBase64
+                  ? sig.signature
+                  : this.getImagePath(sig.signature, baseUrl)
+                : '';
+
+              const sigClass = signatureType === 'digital'
+                  ? 'signature-digital'
+                  : 'signature-barcode';
+
+              // Logika posisi berdasarkan value yang Anda berikan
+              const positionClass = `sig-${sig.position}`; 
+
+              return `
+              <div class="signature-block ${positionClass}">
+                  ${sig.isAcknowledged ? '<div class="acknowledgment-text">Mengetahui,</div>' : ''}
+                  <div class="official-position">${this.escapeHtml(sig.officialPosition)}</div>
+                  <div class="signature-wrapper">
+                      ${
+                        signatureSrc
+                          ? `<img src="${signatureSrc}" alt="Signature" class="signature-img ${sigClass}" />`
+                          : `<div style="height: 70px;"></div>`
+                      }
+                  </div>
+                  <div class="official-name"><u>${this.escapeHtml(sig.officialName)}</u></div>
+                  ${sig.officialNip ? `<div class="official-nip">NBM: ${this.escapeHtml(sig.officialNip)}</div>` : ''}
+              </div>
+            `;
+            })
+            .join('')}
         </div>
     </div>
 
@@ -324,6 +412,18 @@ export class LetterTemplateService {
     }
   }
 
+  private formatHijriDate(date: any): string {
+    if (!date) return '';
+    const d = new Date(date);
+    
+    // Menggunakan Intl.DateTimeFormat dengan kalender islamic-umalqura
+    return new Intl.DateTimeFormat('id-ID-u-ca-islamic-umalqura', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    }).format(d);
+  }
+
   /**
    * Replace placeholders in template content
    * Supports:
@@ -333,63 +433,52 @@ export class LetterTemplateService {
    */
   private replacePlaceholders(
     content: string,
-    student?: any,
-    letter?: any,
-    letterAttributes: LetterAttributeData[] = [],
-    submission?: any, // Tambahkan parameter submission di sini
+    data: LetterPrintData, // Gunakan interface ini agar semua field bisa diakses
   ): string {
     let processedContent = content;
+    const { student, letter, letterAttributes, letterNumber } = data;
 
-    if (student) {
-      Object.entries(this.studentMapping).forEach(
-        ([placeholder, fieldPath]) => {
-          const regex = new RegExp(`\\[${placeholder}\\]`, 'g');
-          const value = this.getNestedValue(student, fieldPath);
-          processedContent = processedContent.replace(
-            regex,
-            value ? String(value) : '',
-          );
-        },
+    // 1. Mapping Student (Eksis)
+    Object.entries(this.studentMapping).forEach(([placeholder, path]) => {
+      const regex = new RegExp(`\\[${placeholder}\\]`, 'g');
+      const value = this.getNestedValue(student, path);
+      processedContent = processedContent.replace(
+        regex,
+        value ? String(value) : '',
       );
-    }
+    });
 
-    if (submission) {
-      Object.entries(this.submissionMapping).forEach(
-        ([placeholder, fieldPath]) => {
-          const regex = new RegExp(`\\[${placeholder}\\]`, 'g');
-          let value = this.getNestedValue(submission, fieldPath);
-
-          // Formating khusus jika field adalah tanggal_surat
-          if (placeholder === 'tanggal_surat' && value) {
-            value = this.formatDate(value);
-          }
-
-          processedContent = processedContent.replace(
-            regex,
-            value ? String(value) : '',
-          );
-        },
+    // 2. Mapping Letter (Eksis)
+    Object.entries(this.letterMapping).forEach(([placeholder, path]) => {
+      const regex = new RegExp(`\\[${placeholder}\\]`, 'g');
+      const value = this.getNestedValue(letter, path);
+      processedContent = processedContent.replace(
+        regex,
+        value ? String(value) : '',
       );
-    }
+    });
 
-    // 2. Ganti Kustom Placeholder Surat [nama_surat] -> letterName
-    if (letter) {
-      Object.entries(this.letterMapping).forEach(([placeholder, fieldPath]) => {
-        const regex = new RegExp(`\\[${placeholder}\\]`, 'g');
-        const value = this.getNestedValue(letter, fieldPath);
-        processedContent = processedContent.replace(
-          regex,
-          value ? String(value) : '',
-        );
-      });
-    }
+    // 3. BARU: Mapping Submission (nomor_surat & tanggal_surat)
+    Object.entries(this.submissionMapping).forEach(([placeholder, path]) => {
+      const regex = new RegExp(`\\[${placeholder}\\]`, 'g');
+      let value = '';
 
-    // 3. Tetap pertahankan fungsionalitas lama untuk LetterAttribute kustom
-    letterAttributes.forEach((attr) => {
-      const regex = new RegExp(
-        `\\[${this.escapeRegex(attr.placeholder)}\\]`,
-        'g',
-      );
+      const rawDate = (data as any).submission?.letterDate || new Date();
+
+      if (path === 'letterNumber') {
+        value = letterNumber || '';
+      } else if (path === 'letterDate') {
+        value = this.formatDate(rawDate);
+      } else if (path === 'letterDateHijri') {
+        value = this.formatHijriDate(rawDate); // Memanggil fungsi konversi Hijriah
+      }
+
+      processedContent = processedContent.replace(regex, value);
+    });
+
+    // 4. Mapping Atribut Dinamis (Eksis)
+    letterAttributes?.forEach((attr) => {
+      const regex = new RegExp(`\\[${attr.placeholder}\\]`, 'g');
       processedContent = processedContent.replace(regex, attr.content || '');
     });
 
@@ -417,7 +506,6 @@ export class LetterTemplateService {
 
     return current;
   }
-  
 
   private formatDate(date: any): string {
     if (!date) return '';

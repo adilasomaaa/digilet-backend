@@ -3,4 +3,5 @@ import { CreateStudentLetterSubmissionDto } from './create-student-letter-submis
 
 export class UpdateStudentLetterSubmissionDto extends PartialType(
   CreateStudentLetterSubmissionDto,
-) {}
+) {
+}

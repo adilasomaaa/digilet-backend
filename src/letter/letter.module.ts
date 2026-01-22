@@ -4,7 +4,7 @@ import { LetterController } from './letter.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
-    imports: [PrismaModule],
+  imports: [PrismaModule],
   controllers: [LetterController],
   providers: [LetterService],
 })

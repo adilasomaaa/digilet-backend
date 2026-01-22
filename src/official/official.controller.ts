@@ -52,10 +52,7 @@ export class OfficialController {
   @Patch(':id')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
-  async update(
-    @Param('id') id: string,
-    @Body() updateDto: UpdateOfficialDto,
-  ) {
+  async update(@Param('id') id: string, @Body() updateDto: UpdateOfficialDto) {
     await this.officialService.update(+id, updateDto);
     return ApiResponse.success('Official berhasil diubah');
   }

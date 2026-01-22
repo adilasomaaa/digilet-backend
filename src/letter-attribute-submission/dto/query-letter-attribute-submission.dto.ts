@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsOptional } from 'class-validator';
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 
-
 export class QueryLetterAttributeSubmissionDto extends PaginationQueryDto {
   @ApiProperty({
     description: 'ID dari letter attribute',
@@ -27,5 +26,4 @@ export class QueryLetterAttributeSubmissionDto extends PaginationQueryDto {
   @IsOptional()
   @IsNumber()
   generalLetterSubmissionId?: number;
-
 }

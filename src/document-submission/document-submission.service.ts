@@ -101,7 +101,7 @@ export class DocumentSubmissionService {
     updateDto: UpdateDocumentSubmissionDto,
     file?: Express.Multer.File,
   ) {
-    let data = await this.findOne(id);
+    const data = await this.findOne(id);
 
     const updateData: any = { ...updateDto };
 

@@ -19,7 +19,9 @@ import { QueryLetterAttributeSubmissionDto } from './dto/query-letter-attribute-
 
 @Controller('api/letter-attribute-submission')
 export class LetterAttributeSubmissionController {
-  constructor(private readonly letterAttributeSubmissionService: LetterAttributeSubmissionService) {}
+  constructor(
+    private readonly letterAttributeSubmissionService: LetterAttributeSubmissionService,
+  ) {}
 
   @Post()
   @UseGuards(AuthGuard('jwt'))
@@ -46,7 +48,10 @@ export class LetterAttributeSubmissionController {
   @ApiBearerAuth('JWT-auth')
   async findOne(@Param('id') id: string) {
     const data = await this.letterAttributeSubmissionService.findOne(+id);
-    return ApiResponse.successWithData('Letter-Attribute-Submission berhasil diambil', data);
+    return ApiResponse.successWithData(
+      'Letter-Attribute-Submission berhasil diambil',
+      data,
+    );
   }
 
   @Patch(':id')
