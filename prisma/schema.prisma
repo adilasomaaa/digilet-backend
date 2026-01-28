@@ -240,12 +240,26 @@ model StudentLetterSubmission {
   letterDate                 DateTime?
   name                       String?
   signatureType              SignatureType?
+  carbonCopy                 String?                     @db.LongText
   status                     StudentLetterStatus
   createdAt                  DateTime                    @default(now())
   updatedAt                  DateTime                    @updatedAt
   letterSignatures           LetterSignature[]
   documentSubmissions        DocumentSubmission[]
   letterAttributeSubmissions LetterAttributeSubmission[]
+  letterAttachments          LetterAttachment[]
+}
+
+model LetterAttachment {
+  id                        Int                      @id @default(autoincrement())
+  studentLetterSubmissionId Int?
+  studentLetterSubmission   StudentLetterSubmission? @relation(fields: [studentLetterSubmissionId], references: [id], onDelete: Cascade)
+  generalLetterSubmissionId Int?
+  generalLetterSubmission   GeneralLetterSubmission? @relation(fields: [generalLetterSubmissionId], references: [id], onDelete: Cascade)
+  content                   String                   @db.LongText
+  isVisible                 Boolean                  @default(false)
+  createdAt                 DateTime                 @default(now())
+  updatedAt                 DateTime                 @updatedAt
 }
 
 model GeneralLetterSubmission {
@@ -260,11 +274,13 @@ model GeneralLetterSubmission {
   letterNumber               String?
   name                       String?
   letterDate                 DateTime?
+  carbonCopy                 String?                     @db.LongText
   signatureType              SignatureType
   createdAt                  DateTime                    @default(now())
   updatedAt                  DateTime                    @updatedAt
   letterSignatures           LetterSignature[]
   letterAttributeSubmissions LetterAttributeSubmission[]
+  letterAttachments          LetterAttachment[]
 }
 
 model LetterSignature {

@@ -336,7 +336,7 @@ export class LetterTemplateService {
                   : this.getImagePath(sig.signature, baseUrl)
                 : '';
 
-              const sigClass = signatureType === 'digital'
+              const sigClass = sig.signatureType === 'digital'
                   ? 'signature-digital'
                   : 'signature-barcode';
 

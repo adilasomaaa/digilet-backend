@@ -64,4 +64,11 @@ export class CreateGeneralLetterSubmissionDto {
     message: 'tipe harus berupa barcode atau digital',
   })
   signatureType: SignatureType;
+
+  @ApiPropertyOptional({
+    description: 'carbon copy',
+  })
+  @IsOptional()
+  @IsString()
+  carbonCopy?: string;
 }

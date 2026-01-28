@@ -14,6 +14,7 @@ import { LetterTemplateService } from 'src/common/services/letter-template.servi
 import { randomUUID } from 'crypto';
 import * as fs from 'fs';
 import { join } from 'path';
+import { UpdateCCStudentLetterSubmissionDto } from './dto/update-cc-student-letter-submission.dto';
 
 @Injectable()
 export class StudentLetterSubmissionService {
@@ -262,6 +263,7 @@ export class StudentLetterSubmissionService {
 
     if (search) {
       where.OR = [
+        { name: { contains: search } },
         { letterNumber: { contains: search } },
         { student: { fullname: { contains: search } } },
         { student: { nim: { contains: search } } },
@@ -341,7 +343,11 @@ export class StudentLetterSubmissionService {
             institution: true,
           },
         },
-        letter: true,
+        letter: {
+          include: {
+            institution: true,
+          },
+        },
         letterSignatures: {
           include: {
             letterSignatureTemplate: {
@@ -367,6 +373,14 @@ export class StudentLetterSubmissionService {
       throw new NotFoundException('Student letter submission tidak ditemukan');
     }
     return data;
+  }
+
+  async updateCarbonCopy(id: number, updateDto: UpdateCCStudentLetterSubmissionDto) {
+    await this.findOne(id);
+    return await this.prismaService.studentLetterSubmission.update({
+      where: { id },
+      data: updateDto,
+    });
   }
 
   async update(

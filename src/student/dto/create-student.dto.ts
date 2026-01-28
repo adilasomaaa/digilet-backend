@@ -20,7 +20,6 @@ export class CreateStudentDto {
 
   @ApiProperty({ example: 'admin@example.com', description: 'email' })
   @IsNotEmpty({ message: 'Email tidak boleh kosong' })
-  @IsEmail({}, { message: 'Email tidak valid' })
   email: string;
 
   @ApiProperty({ example: 'Jl. Merdeka No. 123', description: 'Address' })

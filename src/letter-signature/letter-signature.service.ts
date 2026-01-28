@@ -25,13 +25,22 @@ export class LetterSignatureService {
   }
 
   async findAll(query: QueryLetterSignatureDto) {
-    const { page, limit, search } = query;
+    const { page, limit, search, studentLetterSubmissionId, generalLetterSubmissionId } = query;
 
     const where: Prisma.LetterSignatureWhereInput = {};
 
     if (search) {
       where.OR = [{ signature: { contains: search } }];
     }
+
+    if (studentLetterSubmissionId) {
+      where.studentLetterSubmissionId = studentLetterSubmissionId;
+    }
+
+    if (generalLetterSubmissionId) {
+      where.generalLetterSubmissionId = generalLetterSubmissionId;
+    }
+
 
     const [data, total] = await this.prismaService.$transaction([
       this.prismaService.letterSignature.findMany({

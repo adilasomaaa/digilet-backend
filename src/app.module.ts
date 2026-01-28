@@ -21,6 +21,8 @@ import { DocumentSubmissionModule } from './document-submission/document-submiss
 import { LetterAttributeModule } from './letter-attribute/letter-attribute.module';
 import { LetterAttributeSubmissionModule } from './letter-attribute-submission/letter-attribute-submission.module';
 import { InstitutionModule } from './institution/institution.module';
+import { LetterAttachmentModule } from './letter-attachment/letter-attachment.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -44,6 +46,9 @@ import { InstitutionModule } from './institution/institution.module';
     DocumentSubmissionModule,
     LetterAttributeModule,
     LetterAttributeSubmissionModule,
+    LetterAttributeSubmissionModule,
+    LetterAttachmentModule,
+    DashboardModule
   ],
   providers: [
     FileUploadService,

@@ -115,6 +115,17 @@ export class GeneralLetterSubmissionController {
     await this.generalLetterSubmissionService.update(+id, updateDto);
     return ApiResponse.success('General letter submission berhasil diubah');
   }
+  
+  @Patch(':id/carbon-copy')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('JWT-auth')
+  async updateCarbonCopy(
+    @Param('id') id: string,
+    @Body() updateDto: UpdateGeneralLetterSubmissionDto,
+  ) {
+    await this.generalLetterSubmissionService.updateCarbonCopy(+id, updateDto);
+    return ApiResponse.success('Tembusan berhasil diubah');
+  }
 
   @Delete(':id')
   @UseGuards(AuthGuard('jwt'))

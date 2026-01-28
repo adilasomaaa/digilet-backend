@@ -10,6 +10,7 @@ import { QueryGeneralLetterSubmissionDto } from './dto/query-general-letter-subm
 import { Prisma } from '@prisma/client';
 import { LetterTemplateService } from 'src/common/services/letter-template.service';
 import { randomUUID } from 'crypto';
+import { UpdateCCGeneralLetterSubmissionDto } from './dto/update-cc-general-letter-submission.dto';
 
 @Injectable()
 export class GeneralLetterSubmissionService {
@@ -127,7 +128,11 @@ export class GeneralLetterSubmissionService {
         where,
         include: {
           user: true,
-          letter: true,
+          letter: {
+          include: {
+            institution: true,
+          },
+        },
           institution: true,
           letterAttributeSubmissions: {
             include: {
@@ -164,7 +169,11 @@ export class GeneralLetterSubmissionService {
       where: { id },
       include: {
         user: true,
-        letter: true,
+        letter: {
+          include: {
+            institution: true,
+          },
+        },
         institution: true,
         letterAttributeSubmissions: {
           include: {
@@ -186,6 +195,19 @@ export class GeneralLetterSubmissionService {
       throw new NotFoundException('General letter submission tidak ditemukan');
     }
     return data;
+  }
+
+  async updateCarbonCopy(id: number, updateDto: UpdateCCGeneralLetterSubmissionDto) {
+    const existingSubmission = await this.findOne(id);
+
+    const { carbonCopy } = updateDto;
+
+    return await this.prismaService.generalLetterSubmission.update({
+      where: { id },
+      data: {
+        carbonCopy,
+      },
+    });
   }
 
   async update(id: number, updateDto: UpdateGeneralLetterSubmissionDto) {
