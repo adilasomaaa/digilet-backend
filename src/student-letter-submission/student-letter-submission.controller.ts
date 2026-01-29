@@ -27,6 +27,7 @@ import { FileUploadService } from 'src/common/services/file-upload.services';
 import { QueryStudentLetterSubmissionDto } from './dto/query-student-letter-submission.dto';
 import type { Response, Request } from 'express';
 import { Public } from 'src/auth/decorators/public.decorator';
+import { UpdateCCStudentLetterSubmissionDto } from './dto/update-cc-student-letter-submission.dto';
 
 @Controller('api/student-letter-submission')
 export class StudentLetterSubmissionController {
@@ -141,6 +142,18 @@ export class StudentLetterSubmissionController {
       result.meta,
     );
   }
+
+  @Patch(':id/carbon-copy')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('JWT-auth')
+  async updateCarbonCopy(
+    @Param('id') id: string,
+    @Body() updateDto: UpdateCCStudentLetterSubmissionDto,
+  ) {
+    await this.studentLetterSubmissionService.updateCarbonCopy(+id, updateDto);
+    return ApiResponse.success('Tembusan berhasil diubah');
+  }
+
 
   @Get(':id/print')
   @UseGuards(AuthGuard('jwt'))

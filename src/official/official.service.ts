@@ -15,13 +15,17 @@ export class OfficialService {
     });
   }
 
-  async findAll(query: QueryOfficialDto) {
+  async findAll(query: QueryOfficialDto, user: any) {
     const { page = 1, limit = 10, search } = query;
 
     const where: Prisma.OfficialWhereInput = {};
 
     if (search) {
       where.OR = [{ name: { contains: search } }];
+    }
+
+    if(user.roles.name == 'personnel') {
+      where.institutionId = user.personnel.institutionId;
     }
 
     const [data, total] = await this.prismaService.$transaction([

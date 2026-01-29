@@ -39,6 +39,11 @@ enum InstitutionType {
   institution
 }
 
+enum LetterStatus {
+  public
+  private
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -85,15 +90,15 @@ model Personnel {
 }
 
 model Official {
-  id                       Int                       @id @default(autoincrement())
-  name                     String
-  occupation               String
-  nip                      String
-  institution              Institution?              @relation(fields: [institutionId], references: [id])
-  institutionId            Int?
-  createdAt                DateTime                  @default(now())
-  updatedAt                DateTime                  @updatedAt
-  letterSignatureTemplates LetterSignatureTemplate[]
+  id               Int               @id @default(autoincrement())
+  name             String
+  occupation       String
+  nip              String
+  institution      Institution?      @relation(fields: [institutionId], references: [id])
+  institutionId    Int?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  letterSignatures LetterSignature[]
 }
 
 model Student {
@@ -178,11 +183,11 @@ model Letter {
   expiredDate          Int?
   letterNumberingStart Int?
   category             LetterCategory
+  status               LetterStatus?
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
 
   letterTemplates          LetterTemplate[]
-  letterSignatureTemplates LetterSignatureTemplate[]
   studentLetterSubmissions StudentLetterSubmission[]
   generalLetterSubmissions GeneralLetterSubmission[]
   letterDocuments          LetterDocument[]
@@ -213,20 +218,6 @@ model LetterTemplate {
   content   String   @db.LongText
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
-
-model LetterSignatureTemplate {
-  id               Int               @id @default(autoincrement())
-  letterId         Int
-  letter           Letter            @relation(fields: [letterId], references: [id], onDelete: Cascade)
-  officialId       Int
-  official         Official          @relation(fields: [officialId], references: [id], onDelete: Cascade)
-  position         String            @default("right")
-  token            String?
-  isAcknowledged   Boolean           @default(false)
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  letterSignatures LetterSignature[]
 }
 
 model StudentLetterSubmission {
@@ -289,12 +280,16 @@ model LetterSignature {
   studentLetterSubmission   StudentLetterSubmission? @relation(fields: [studentLetterSubmissionId], references: [id], onDelete: Cascade)
   generalLetterSubmissionId Int?
   generalLetterSubmission   GeneralLetterSubmission? @relation(fields: [generalLetterSubmissionId], references: [id], onDelete: Cascade)
-  letterSignatureTemplateId Int
-  letterSignatureTemplate   LetterSignatureTemplate  @relation(fields: [letterSignatureTemplateId], references: [id], onDelete: Cascade)
   signature                 String?                  @db.LongText
   verifiedAt                DateTime?
+  occupation                String?
+  uniqueCode                String?
   token                     String
   code                      String
+  officialId                Int
+  official                  Official                 @relation(fields: [officialId], references: [id], onDelete: Cascade)
+  position                  String                   @default("right")
+  isAcknowledged            Boolean                  @default(false)
   createdAt                 DateTime                 @default(now())
   updatedAt                 DateTime                 @updatedAt
 }

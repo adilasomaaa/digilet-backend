@@ -43,6 +43,8 @@ export class LetterService {
 
     if (user.roles.name === 'student') {
       where.category = 'study_program';
+      where.status = 'public';
+      where.institutionId = user.student.institutionId;
     }
 
     const [data, total] = await this.prismaService.$transaction([

@@ -12,7 +12,6 @@ import { OfficialModule } from './official/official.module';
 import { LetterModule } from './letter/letter.module';
 import { LetterheadModule } from './letterhead/letterhead.module';
 import { LetterTemplateModule } from './letter-template/letter-template.module';
-import { LetterSignatureTemplateModule } from './letter-signature-template/letter-signature-template.module';
 import { LetterDocumentModule } from './letter-document/letter-document.module';
 import { LetterSignatureModule } from './letter-signature/letter-signature.module';
 import { StudentLetterSubmissionModule } from './student-letter-submission/student-letter-submission.module';
@@ -38,7 +37,6 @@ import { DashboardModule } from './dashboard/dashboard.module';
     LetterModule,
     LetterheadModule,
     LetterTemplateModule,
-    LetterSignatureTemplateModule,
     LetterDocumentModule,
     LetterSignatureModule,
     StudentLetterSubmissionModule,

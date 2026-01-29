@@ -50,25 +50,6 @@ export class GeneralLetterSubmissionService {
       );
     }
 
-    const letterSignatureTemplates =
-      await this.prismaService.letterSignatureTemplate.findMany({
-        where: {
-          letterId: letterId,
-        },
-      });
-
-    const letterSignatureSubmissions = letterSignatureTemplates.map(
-      (template) => ({
-        token: randomUUID(),
-        code: Math.floor(100000 + Math.random() * 900000)
-          .toString()
-          .slice(-6),
-        letterSignatureTemplate: {
-          connect: { id: template.id },
-        },
-      }),
-    );
-
     return await this.prismaService.generalLetterSubmission.create({
       data: {
         letterDate: letterDate ? new Date(letterDate) : undefined,
@@ -91,9 +72,6 @@ export class GeneralLetterSubmissionService {
               content: attr.content,
               letterAttribute: { connect: { id: attr.attributeId } },
             })) || [],
-        },
-        letterSignatures: {
-          create: letterSignatureSubmissions,
         },
       },
       include: {
@@ -141,11 +119,7 @@ export class GeneralLetterSubmissionService {
           },
           letterSignatures: {
             include: {
-              letterSignatureTemplate: {
-                include: {
-                  official: true,
-                },
-              },
+              official: true,
             },
           },
         },
@@ -182,11 +156,7 @@ export class GeneralLetterSubmissionService {
         },
         letterSignatures: {
           include: {
-            letterSignatureTemplate: {
-              include: {
-                official: true,
-              },
-            },
+            official: true,
           },
         },
       },
@@ -257,16 +227,10 @@ export class GeneralLetterSubmissionService {
           },
           letterSignatures: {
             include: {
-              letterSignatureTemplate: {
-                include: {
-                  official: true,
-                },
-              },
+              official: true,
             },
             orderBy: {
-              letterSignatureTemplate: {
-                position: 'asc',
-              },
+              position: 'asc',
             },
           },
           letterAttributeSubmissions: {
@@ -296,11 +260,11 @@ export class GeneralLetterSubmissionService {
     // Prepare signatures data
     const signatures = submission.letterSignatures.map((sig) => ({
       signature: sig.signature || undefined,
-      officialName: sig.letterSignatureTemplate.official.name,
-      officialPosition: sig.letterSignatureTemplate.official.occupation,
-      officialNip: sig.letterSignatureTemplate.official.nip,
-      position: sig.letterSignatureTemplate.position || 'right',
-      isAcknowledged: sig.letterSignatureTemplate.isAcknowledged,
+      officialName: sig.official.name,
+      officialPosition: sig.occupation || '',
+      officialNip: sig.uniqueCode || '',
+      position: sig.position || 'right',
+      isAcknowledged: sig.isAcknowledged,
     }));
 
     // Prepare letter attributes data for placeholder replacement
@@ -310,6 +274,17 @@ export class GeneralLetterSubmissionService {
         content: submission.content,
       }),
     );
+
+    const carbonCopy = submission.carbonCopy || '';
+
+    // Prepare attachments
+    // Note: GeneralLetterSubmission needs letterAttachments relation in helper queries or include it here if not present
+    // Let's assume letterAttachments relation exists and is included.
+    const attachments = (submission as any).letterAttachments
+      ? (submission as any).letterAttachments
+          .filter((att: any) => att.isVisible)
+          .map((att: any) => att.content)
+      : [];
 
     // Generate HTML using template service
     return this.letterTemplateService.generatePrintHtml(
@@ -329,7 +304,9 @@ export class GeneralLetterSubmissionService {
         signatures,
         letter: submission.letter,
         letterAttributes,
-      },
+        carbonCopy,
+        attachments,
+      } as any,
       baseUrl,
     );
   }
@@ -351,16 +328,10 @@ export class GeneralLetterSubmissionService {
           },
           letterSignatures: {
             include: {
-              letterSignatureTemplate: {
-                include: {
-                  official: true,
-                },
-              },
+              official: true,
             },
             orderBy: {
-              letterSignatureTemplate: {
-                position: 'asc',
-              },
+              position: 'asc',
             },
           },
           letterAttributeSubmissions: {
@@ -368,6 +339,7 @@ export class GeneralLetterSubmissionService {
               letterAttribute: true,
             },
           },
+          letterAttachments: true,
         },
       });
 
@@ -387,11 +359,11 @@ export class GeneralLetterSubmissionService {
 
     const signatures = submission.letterSignatures.map((sig) => ({
       signature: sig.signature || undefined,
-      officialName: sig.letterSignatureTemplate.official.name,
-      officialPosition: sig.letterSignatureTemplate.official.occupation,
-      officialNip: sig.letterSignatureTemplate.official.nip,
-      position: sig.letterSignatureTemplate.position || 'right',
-      isAcknowledged: sig.letterSignatureTemplate.isAcknowledged,
+      officialName: sig.official.name,
+      officialPosition: sig.occupation || '',
+      officialNip: sig.uniqueCode || '',
+      position: sig.position || 'right',
+      isAcknowledged: sig.isAcknowledged,
     }));
 
     const letterAttributes = submission.letterAttributeSubmissions.map(
@@ -400,6 +372,14 @@ export class GeneralLetterSubmissionService {
         content: submission.content,
       }),
     );
+
+    const carbonCopy = submission.carbonCopy || '';
+
+    const attachments = submission.letterAttachments
+      ? submission.letterAttachments
+          .filter(att => att.isVisible)
+          .map(att => att.content)
+      : [];
 
     return this.letterTemplateService.generatePdf(
       {
@@ -420,6 +400,8 @@ export class GeneralLetterSubmissionService {
         letter: submission.letter,
         letterAttributes,
         submission: submission,
+        carbonCopy,
+        attachments,
       } as any,
       baseUrl,
     );

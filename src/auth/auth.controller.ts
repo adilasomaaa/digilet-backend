@@ -16,6 +16,7 @@ import { Public } from './decorators/public.decorator';
 import { LoginDto } from './dto/login.dto';
 import { ApiResponse } from 'src/common/helpers/api-response.helper';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @ApiTags('Autentikasi')
 @Controller('api/auth')
@@ -60,8 +61,16 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
   @Post('change-password')
-  async changePassword(id: number, changePasswordDto: ChangePasswordDto) {
-    const data = await this.AuthService.changePassword(id, changePasswordDto);
+  async changePassword(@Request() req: any, @Body() changePasswordDto: ChangePasswordDto) {
+    await this.AuthService.changePassword(req.user.id, changePasswordDto);
     return ApiResponse.success('Password berhasil diperbarui');
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('JWT-auth')
+  @Post('profile')
+  async updateProfile(@Request() req: any, @Body() updateProfileDto: UpdateProfileDto) {
+    const result = await this.AuthService.updateProfile(req.user.id, updateProfileDto);
+    return ApiResponse.successWithData('Profil berhasil diperbarui', result);
   }
 }

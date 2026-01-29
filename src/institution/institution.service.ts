@@ -15,13 +15,17 @@ export class InstitutionService {
     return data;
   }
 
-  async findAll(query: QueryInstitutionDto) {
+  async findAll(query: QueryInstitutionDto, user: any) {
     const { page, limit, search } = query;
 
     const where: Prisma.InstitutionWhereInput = {};
 
     if (search) {
       where.OR = [{ name: { contains: search } }];
+    }
+
+    if(user.roles.name == 'personnel') {
+      where.id = user.personnel.institutionId;
     }
 
     const [data, total] = await this.prismaService.$transaction([

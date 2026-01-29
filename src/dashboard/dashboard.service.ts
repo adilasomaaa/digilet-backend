@@ -220,15 +220,11 @@ export class DashboardService {
     const recentSignatures = await this.prisma.letterSignature.findMany({
       where: whereClause,
       include: {
-        letterSignatureTemplate: {
-          include: {
-            official: {
-              select: {
-                name: true,
-                occupation: true,
-                nip: true,
-              }
-            }
+        official: {
+          select: {
+            name: true,
+            occupation: true,
+            nip: true,
           }
         },
         studentLetterSubmission: {

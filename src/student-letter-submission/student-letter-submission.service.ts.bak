@@ -519,7 +519,6 @@ export class StudentLetterSubmissionService {
               letterAttribute: true,
             },
           },
-          letterAttachments: true,
         },
       });
 
@@ -546,8 +545,8 @@ export class StudentLetterSubmissionService {
     const signatures = submission.letterSignatures.map((sig) => ({
       signature: sig.signature || undefined,
       officialName: sig.official.name,
-      officialPosition: sig.occupation,
-      officialNip: sig.uniqueCode,
+      officialPosition: sig.official.occupation,
+      officialNip: sig.official.nip,
       position: sig.position || 'right',
     }));
 
@@ -558,15 +557,6 @@ export class StudentLetterSubmissionService {
         content: submission.content,
       }),
     );
-
-    const carbonCopy = submission.carbonCopy || '';
-    
-    // Prepare attachments
-    const attachments = submission.letterAttachments
-      ? submission.letterAttachments
-          .filter(att => att.isVisible)
-          .map(att => att.content)
-      : [];
 
     // Generate HTML using template service
     return this.letterTemplateService.generatePrintHtml(
@@ -581,8 +571,8 @@ export class StudentLetterSubmissionService {
         letter: submission.letter,
         letterAttributes,
         submission: submission,
-        carbonCopy,
-        attachments,
+        carbonCopy: submission.carbonCopy || undefined,
+        letterAttachments: submission.letterAttachments || undefined,
       } as any,
       baseUrl,
     );
@@ -622,7 +612,6 @@ export class StudentLetterSubmissionService {
               letterAttribute: true,
             },
           },
-          letterAttachments: true,
         },
       });
 
@@ -649,8 +638,8 @@ export class StudentLetterSubmissionService {
     const signatures = submission.letterSignatures.map((sig) => ({
       signature: sig.signature || undefined,
       officialName: sig.official.name,
-      officialPosition: sig.occupation || '',
-      officialNip: sig.uniqueCode || '',
+      officialPosition: sig.official.occupation,
+      officialNip: sig.official.nip,
       position: sig.position || 'right',
       isAcknowledged: sig.isAcknowledged,
     }));
@@ -662,15 +651,6 @@ export class StudentLetterSubmissionService {
         content: submission.content,
       }),
     );
-
-    const carbonCopy = submission.carbonCopy || '';
-    
-    // Prepare attachments
-    const attachments = submission.letterAttachments
-      ? submission.letterAttachments
-          .filter(att => att.isVisible)
-          .map(att => att.content)
-      : [];
 
     // Generate PDF using template service
     return this.letterTemplateService.generatePdf(
@@ -691,8 +671,8 @@ export class StudentLetterSubmissionService {
         student: submission.student,
         letter: submission.letter,
         letterAttributes,
-        carbonCopy,
-        attachments,
+        carbonCopy: submission.carbonCopy || undefined,
+        letterAttachments: submission.letterAttachments || undefined,
       },
       baseUrl,
     );

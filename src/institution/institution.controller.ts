@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Query,
+  Req,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth } from '@nestjs/swagger';
@@ -32,8 +33,8 @@ export class InstitutionController {
   @Get()
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
-  async findAll(@Query() query: QueryInstitutionDto) {
-    const result = await this.institutionService.findAll(query);
+  async findAll(@Query() query: QueryInstitutionDto, @Req() req: any) {
+    const result = await this.institutionService.findAll(query, req.user);
     return ApiResponse.successWithPaginate(
       'Institusi berhasil diambil',
       result.data,

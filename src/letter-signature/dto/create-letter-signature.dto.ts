@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateLetterSignatureDto {
   @ApiPropertyOptional({
@@ -17,16 +17,37 @@ export class CreateLetterSignatureDto {
   generalLetterSubmissionId?: number;
 
   @ApiProperty({
-    description: 'ID dari letter signature template',
+    description: 'ID dari official',
   })
   @IsNotEmpty()
   @IsNumber()
-  letterSignatureTemplateId: number;
+  officialId: number;
 
   @ApiProperty({
-    description: 'Signature (string)',
+    description: 'Apakah sudah mengakui',
+  })
+  @IsNotEmpty()
+  @IsBoolean()
+  isAcknowledged: boolean;
+
+  @ApiProperty({
+    description: 'Posisi',
   })
   @IsNotEmpty()
   @IsString()
-  signature: string;
+  position: string;
+
+  @ApiProperty({
+    description: 'Jabatan',
+  })
+  @IsNotEmpty()
+  @IsString()
+  occupation: string;
+
+  @ApiProperty({
+    description: 'NIP',
+  })
+  @IsNotEmpty()
+  @IsString()
+  uniqueCode: string;
 }

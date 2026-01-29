@@ -52,19 +52,16 @@ export class LetterSignatureService {
           studentLetterSubmission: {
             include: {
               student: true,
+              letter: true
             },
           },
           generalLetterSubmission: {
             include: {
               user: true,
-            },
-          },
-          letterSignatureTemplate: {
-            include: {
-              official: true,
               letter: true,
             },
           },
+          official: true,
         },
       }),
       this.prismaService.letterSignature.count({ where }),
@@ -107,11 +104,7 @@ export class LetterSignatureService {
             },
           },
         },
-        letterSignatureTemplate: {
-          include: {
-            official: true,
-          },
-        },
+        official: true,
       },
     });
     if (!data) {
@@ -127,19 +120,21 @@ export class LetterSignatureService {
         studentLetterSubmission: {
           include: {
             student: true,
+            letter:true,
           },
         },
         generalLetterSubmission: {
           include: {
             user: true,
-          },
-        },
-        letterSignatureTemplate: {
-          include: {
-            official: true,
             letter: true,
+            letterAttributeSubmissions: {
+              include: {
+                letterAttribute: true,
+              },
+            },
           },
         },
+        official: true,
       },
     });
     if (!data) {

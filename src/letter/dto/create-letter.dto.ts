@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { LetterCategory, SignatureType } from '@prisma/client';
+import { LetterCategory, LetterStatus, SignatureType } from '@prisma/client';
 import {
   IsIn,
   IsNotEmpty,
@@ -41,4 +41,14 @@ export class CreateLetterDto {
     message: 'tipe harus berupa faculty, study_program, university, atau all',
   })
   category: LetterCategory;
+
+  @ApiProperty({
+    description: 'kategori surat',
+    enum: ['public', 'private'],
+  })
+  @IsNotEmpty({ message: 'kategori surat tidak boleh kosong' })
+  @IsIn(['public', 'private'], {
+    message: 'tipe harus berupa public atau private',
+  })
+  status: LetterStatus;
 }

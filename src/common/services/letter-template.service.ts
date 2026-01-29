@@ -25,6 +25,8 @@ interface LetterPrintData {
   student?: any; // Student data
   letter?: any; // Letter data
   letterAttributes?: LetterAttributeData[]; // LetterAttributeSubmission data
+  carbonCopy?: string | string[]; // Tembusan (HTML string or array)
+  attachments?: string[]; // Lampiran (HTML content)
 }
 
 @Injectable()
@@ -33,7 +35,7 @@ export class LetterTemplateService {
     nama_mahasiswa: 'fullname',
     nim: 'nim',
     angkatan: 'classYear',
-    program_studi: 'studyProgram.name',
+    program_studi: 'institution.name',
     alamat: 'address',
     nomor_telepon: 'phoneNumber',
     tempat_lahir: 'birthplace',
@@ -59,11 +61,33 @@ export class LetterTemplateService {
       recipientInfo,
       letterContent,
       letterhead,
+      carbonCopy,
+      attachments,
     } = data;
 
     const { signatures, signatureType } = data;
 
     const processedContent = this.replacePlaceholders(letterContent, data);
+
+    // Process carbonCopy: check if it's an array or string
+    let carbonCopyHtml = '';
+    if (carbonCopy) {
+      if (Array.isArray(carbonCopy) && carbonCopy.length > 0) {
+         carbonCopyHtml = `
+            <div class="carbon-copy">
+                <b>Tembusan:</b>
+                <ol>
+                    ${carbonCopy.map(cc => `<li>${cc}</li>`).join('')}
+                </ol>
+            </div>`;
+      } else if (typeof carbonCopy === 'string' && carbonCopy.trim() !== '') {
+          // Render as raw HTML
+          carbonCopyHtml = `
+            <div class="carbon-copy">
+                ${carbonCopy}
+            </div>`;
+      }
+    }
 
     return `
 <!DOCTYPE html>
@@ -122,6 +146,10 @@ export class LetterTemplateService {
             max-width: 21cm;
             margin: 0 auto;
             background: white;
+            box-sizing: border-box;
+            position: relative;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
         .letterhead {
             text-align: center;
@@ -184,24 +212,19 @@ export class LetterTemplateService {
         }
 
         .letter-content table {
-            width: 100% !important;
+            width: 100%;
             border-collapse: collapse;
-            border: none !important; /* Menghilangkan border luar tabel */
         }
 
         .letter-content table td {
-            border: none !important;    /* Menghilangkan garis antar sel */
-            padding: 2px 4px !important; /* Spasi lebih rapat sesuai referensi */
+            padding: 2px 4px; /* Spasi default, bisa di-override inline */
             vertical-align: top;
+            border-style: solid; /* Default style to allow border-width to work */
+            border-width: 1px;     /* Default width 0 so borders are hidden unless specified inline */
+            border-color: #000;  /* Default color black so 1px borders are visible */
         }
         .letter-content table td, strong {
-            margin:0!important;
-        }
-
-        /* 4. Selector khusus jika Anda ingin membuat tabel yang MEMANG pakai border (misal: daftar nilai) */
-        .letter-content table.with-border, 
-        .letter-content table.with-border td {
-            border: 1px solid #000 !important;
+            margin: 0;
         }
         .signatures {
           display: grid;
@@ -290,6 +313,36 @@ export class LetterTemplateService {
             font-weight: bold;
             font-size: 12pt;
         }
+
+        .carbon-copy {
+            margin-top: 20px;
+            font-size: 10pt;
+            /* If it's from editor, it might have p tags with margins */
+        }
+        .carbon-copy p {
+            margin: 0;
+        }
+        
+        .attachment-page {
+            page-break-before: always;
+        }
+        
+        .attachment-page img {
+            max-width: 100%;
+            height: auto;
+        }
+        .attachment-page table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+
+        .attachment-page table td {
+          padding: 2px 4px; /* Spasi default, bisa di-override inline */
+          vertical-align: top;
+          border-style: solid; /* Default style to allow border-width to work */
+          border-width: 1px;     /* Default width 0 so borders are hidden unless specified inline */
+          border-color: #000;  /* Default color black so 1px borders are visible */
+        }
     </style>
 </head>
 <body>
@@ -343,9 +396,19 @@ export class LetterTemplateService {
               // Logika posisi berdasarkan value yang Anda berikan
               const positionClass = `sig-${sig.position}`; 
 
-              return `
+              
+               // Check if any signature in the list has acknowledgment to maintain alignment
+               const hasAcknowledgment = signatures.some((s: any) => s.isAcknowledged);
+
+               return `
               <div class="signature-block ${positionClass}">
-                  ${sig.isAcknowledged ? '<div class="acknowledgment-text">Mengetahui,</div>' : ''}
+                  ${
+                    sig.isAcknowledged
+                      ? '<div class="acknowledgment-text">Mengetahui,</div>'
+                      : hasAcknowledgment
+                        ? '<div class="acknowledgment-text" style="visibility: hidden;">Mengetahui,</div>'
+                        : ''
+                  }
                   <div class="official-position">${this.escapeHtml(sig.officialPosition)}</div>
                   <div class="signature-wrapper">
                       ${
@@ -361,7 +424,23 @@ export class LetterTemplateService {
             })
             .join('')}
         </div>
+        
+        ${carbonCopyHtml}
     </div>
+    
+    ${
+      attachments && attachments.length > 0
+        ? attachments
+            .map(
+              (att) => `
+        <div class="attachment-page">
+            ${att}
+        </div>
+        `
+            )
+            .join('')
+        : ''
+    }
 
     <div class="print-button no-print">
         <button onclick="window.print()">Print Surat</button>

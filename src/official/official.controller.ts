@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Query,
+  Req,
 } from '@nestjs/common';
 import { OfficialService } from './official.service';
 import { CreateOfficialDto } from './dto/create-official.dto';
@@ -32,8 +33,8 @@ export class OfficialController {
   @Get()
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
-  async findAll(@Query() query: QueryOfficialDto) {
-    const result = await this.officialService.findAll(query);
+  async findAll(@Query() query: QueryOfficialDto, @Req() req: any) {
+    const result = await this.officialService.findAll(query, req.user);
     return ApiResponse.successWithPaginate(
       'Official berhasil diambil',
       result.data,
