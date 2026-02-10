@@ -14,7 +14,7 @@ import { CreatePersonnelDto } from './dto/create-personnel.dto';
 import { UpdatePersonnelDto } from './dto/update-personnel.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { ApiResponse } from 'src/common/helpers/api-response.helper';
+import { ApiResponse } from '../common/helpers/api-response.helper';
 import { QueryPersonnelDto } from './dto/query-personnel.dto';
 
 @Controller('api/personnel')

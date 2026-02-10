@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { CreatePersonnelDto } from './dto/create-personnel.dto';
 import { UpdatePersonnelDto } from './dto/update-personnel.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { QueryPersonnelDto } from './dto/query-personnel.dto';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';

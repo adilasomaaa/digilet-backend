@@ -16,10 +16,10 @@ import { CreateGeneralLetterSubmissionDto } from './dto/create-general-letter-su
 import { UpdateGeneralLetterSubmissionDto } from './dto/update-general-letter-submission.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { ApiResponse } from 'src/common/helpers/api-response.helper';
+import { ApiResponse } from '../common/helpers/api-response.helper';
 import { QueryGeneralLetterSubmissionDto } from './dto/query-general-letter-submission.dto';
 import type { Response, Request } from 'express';
-import { Public } from 'src/auth/decorators/public.decorator';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('api/general-letter-submission')
 export class GeneralLetterSubmissionController {

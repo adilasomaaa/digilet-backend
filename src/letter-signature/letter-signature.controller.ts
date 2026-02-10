@@ -14,9 +14,9 @@ import { CreateLetterSignatureDto } from './dto/create-letter-signature.dto';
 import { UpdateLetterSignatureDto } from './dto/update-letter-signature.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { ApiResponse } from 'src/common/helpers/api-response.helper';
+import { ApiResponse } from '../common/helpers/api-response.helper';
 import { QueryLetterSignatureDto } from './dto/query-letter-signature.dto';
-import { Public } from 'src/auth/decorators/public.decorator';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('api/letter-signature')
 export class LetterSignatureController {

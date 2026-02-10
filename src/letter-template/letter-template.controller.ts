@@ -14,7 +14,7 @@ import { CreateLetterTemplateDto } from './dto/create-letter-template.dto';
 import { UpdateLetterTemplateDto } from './dto/update-letter-template.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { ApiResponse } from 'src/common/helpers/api-response.helper';
+import { ApiResponse } from '../common/helpers/api-response.helper';
 import { QueryLetterTemplateDto } from './dto/query-letter-template.dto';
 
 @Controller('api/letter-template')

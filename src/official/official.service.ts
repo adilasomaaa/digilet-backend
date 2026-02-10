@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOfficialDto } from './dto/create-official.dto';
 import { UpdateOfficialDto } from './dto/update-official.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { QueryOfficialDto } from './dto/query-official.dto';
 import { Prisma } from '@prisma/client';
 

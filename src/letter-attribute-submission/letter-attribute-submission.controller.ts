@@ -14,7 +14,7 @@ import { CreateLetterAttributeSubmissionDto } from './dto/create-letter-attribut
 import { UpdateLetterAttributeSubmissionDto } from './dto/update-letter-attribute-submission.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { ApiResponse } from 'src/common/helpers/api-response.helper';
+import { ApiResponse } from '../common/helpers/api-response.helper';
 import { QueryLetterAttributeSubmissionDto } from './dto/query-letter-attribute-submission.dto';
 
 @Controller('api/letter-attribute-submission')

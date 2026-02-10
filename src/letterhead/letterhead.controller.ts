@@ -17,10 +17,10 @@ import { CreateLetterheadDto } from './dto/create-letterhead.dto';
 import { UpdateLetterheadDto } from './dto/update-letterhead.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { ApiResponse } from 'src/common/helpers/api-response.helper';
+import { ApiResponse } from '../common/helpers/api-response.helper';
 import { QueryLetterheadDto } from './dto/query-letterhead.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { FileUploadService } from 'src/common/services/file-upload.services';
+import { FileUploadService } from '../common/services/file-upload.services';
 
 @Controller('api/letterhead')
 export class LetterheadController {

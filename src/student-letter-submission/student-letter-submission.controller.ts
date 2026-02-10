@@ -21,12 +21,12 @@ import { VerifyStudentLetterSubmissionDto } from './dto/verify-student-letter-su
 import { ChangeStatusStudentLetterSubmissionDto } from './dto/change-status-student-letter-submission.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
-import { ApiResponse } from 'src/common/helpers/api-response.helper';
+import { ApiResponse } from '../common/helpers/api-response.helper';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { FileUploadService } from 'src/common/services/file-upload.services';
+import { FileUploadService } from '../common/services/file-upload.services';
 import { QueryStudentLetterSubmissionDto } from './dto/query-student-letter-submission.dto';
 import type { Response, Request } from 'express';
-import { Public } from 'src/auth/decorators/public.decorator';
+import { Public } from '../auth/decorators/public.decorator';
 import { UpdateCCStudentLetterSubmissionDto } from './dto/update-cc-student-letter-submission.dto';
 
 @Controller('api/student-letter-submission')

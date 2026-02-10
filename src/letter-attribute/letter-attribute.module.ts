@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { LetterAttributeService } from './letter-attribute.service';
 import { LetterAttributeController } from './letter-attribute.controller';
-import { PrismaModule } from 'src/prisma/prisma.module';
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
   imports: [PrismaModule],

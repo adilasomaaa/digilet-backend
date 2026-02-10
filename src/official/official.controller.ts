@@ -15,7 +15,7 @@ import { CreateOfficialDto } from './dto/create-official.dto';
 import { UpdateOfficialDto } from './dto/update-official.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { ApiResponse } from 'src/common/helpers/api-response.helper';
+import { ApiResponse } from '../common/helpers/api-response.helper';
 import { QueryOfficialDto } from './dto/query-official.dto';
 
 @Controller('api/official')

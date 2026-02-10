@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { QueryStudentDto } from './dto/query-student.dto';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
@@ -99,7 +99,7 @@ export class StudentService {
     return bcrypt.hash(password, 10);
   }
 
-  async findAll(query: QueryStudentDto) {
+  async findAll(query: QueryStudentDto, user: any) {
     const { page = 1, limit = 10, search } = query;
 
     const where: Prisma.StudentWhereInput = {};
@@ -110,6 +110,10 @@ export class StudentService {
         { institution: { name: { contains: search } } },
         { nim: { contains: search } },
       ];
+    }
+
+    if(user.roles.name === 'personnel') {
+      where.institutionId = user.personnel.institutionId;
     }
 
     const [data, total] = await this.prismaService.$transaction([

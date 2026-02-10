@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { ApiResponse } from 'src/common/helpers/api-response.helper';
+import { ApiResponse } from '../common/helpers/api-response.helper';
 import { CreateInstitutionDto } from './dto/create-institution.dto';
 import { QueryInstitutionDto } from './dto/query-institution.dto';
 import { UpdateInstitutionDto } from './dto/update-institution.dto';

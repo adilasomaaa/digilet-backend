@@ -14,7 +14,7 @@ import { CreateLetterDocumentDto } from './dto/create-letter-document.dto';
 import { UpdateLetterDocumentDto } from './dto/update-letter-document.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { ApiResponse } from 'src/common/helpers/api-response.helper';
+import { ApiResponse } from '../common/helpers/api-response.helper';
 import { QueryLetterDocumentDto } from './dto/query-letter-document.dto';
 
 @Controller('api/letter-document')

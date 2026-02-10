@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateLetterSignatureDto } from './dto/create-letter-signature.dto';
 import { UpdateLetterSignatureDto } from './dto/update-letter-signature.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { QueryLetterSignatureDto } from './dto/query-letter-signature.dto';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';

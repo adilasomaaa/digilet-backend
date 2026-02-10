@@ -13,13 +13,14 @@ import {
   UseInterceptors,
   UploadedFile,
   ParseIntPipe,
+  Req,
 } from '@nestjs/common';
 import { StudentService } from './student.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiBody, ApiConsumes } from '@nestjs/swagger';
-import { ApiResponse } from 'src/common/helpers/api-response.helper';
+import { ApiResponse } from '../common/helpers/api-response.helper';
 import { QueryStudentDto } from './dto/query-student.dto';
 import * as express from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -39,8 +40,8 @@ export class StudentController {
   @Get()
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
-  async findAll(@Query() query: QueryStudentDto) {
-    const result = await this.studentService.findAll(query);
+  async findAll(@Query() query: QueryStudentDto, @Req() req: any) {
+    const result = await this.studentService.findAll(query, req.user);
     return ApiResponse.successWithPaginate(
       'Student berhasil diambil',
       result.data,

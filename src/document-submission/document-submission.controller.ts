@@ -16,10 +16,10 @@ import { CreateDocumentSubmissionDto } from './dto/create-document-submission.dt
 import { UpdateDocumentSubmissionDto } from './dto/update-document-submission.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
-import { ApiResponse } from 'src/common/helpers/api-response.helper';
+import { ApiResponse } from '../common/helpers/api-response.helper';
 import { QueryDocumentSubmissionDto } from './dto/query-document-submission.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { FileUploadService } from 'src/common/services/file-upload.services';
+import { FileUploadService } from '../common/services/file-upload.services';
 
 @Controller('api/document-submission')
 export class DocumentSubmissionController {

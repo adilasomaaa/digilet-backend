@@ -1,72 +1,72 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Create{{pascalCase name}}Dto } from './dto/create-{{kebabCase name}}.dto';
 import { Update{{pascalCase name}}Dto } from './dto/update-{{kebabCase name}}.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { Query{{pascalCase name}}Dto } from './dto/query-{{kebabCase name}}.dto';
 import { Prisma } from '@prisma/client';
 
 
 @Injectable()
 export class {{pascalCase name}}Service {
-  constructor(private prismaService: PrismaService) {}
+constructor(private prismaService: PrismaService) {}
 
-  async create(createDto: Create{{pascalCase name}}Dto) {
-    return await this.prismaService.{{camelCase name}}.create({
-      data: createDto,
-    });
-  }
+async create(createDto: Create{{pascalCase name}}Dto) {
+return await this.prismaService.{{camelCase name}}.create({
+data: createDto,
+});
+}
 
-  async findAll(query: Query{{pascalCase name}}Dto) {
-    const { page , limit , search } = query;
+async findAll(query: Query{{pascalCase name}}Dto) {
+const { page , limit , search } = query;
 
-    const where: Prisma.{{pascalCase name}}WhereInput = {};
+const where: Prisma.{{pascalCase name}}WhereInput = {};
 
-    if (search) {
-      where.OR = [{ name: { contains: search } }];
-    }
+if (search) {
+where.OR = [{ name: { contains: search } }];
+}
 
-    const [data, total] = await this.prismaService.$transaction([
-      this.prismaService.{{camelCase name}}.findMany({
-        skip: (Number(page) - 1) * Number(limit),
-        take: Number(limit),
-        orderBy: { createdAt: 'asc' },
-      }),
-      this.prismaService.{{camelCase name}}.count(),
-    ]);
+const [data, total] = await this.prismaService.$transaction([
+this.prismaService.{{camelCase name}}.findMany({
+skip: (Number(page) - 1) * Number(limit),
+take: Number(limit),
+orderBy: { createdAt: 'asc' },
+}),
+this.prismaService.{{camelCase name}}.count(),
+]);
 
-    return {
-      data,
-      meta: {
-        page: Number(page),
-        limit: Number(limit),
-        totalData: total,
-        totalPages: Math.ceil(total / Number(limit)),
-      },
-    };
-  }
+return {
+data,
+meta: {
+page: Number(page),
+limit: Number(limit),
+totalData: total,
+totalPages: Math.ceil(total / Number(limit)),
+},
+};
+}
 
-  async findOne(id: number) {
-    const data = await this.prismaService.{{camelCase name}}.findUnique({
-      where: { id },
-    });
-    if (!data) {
-      throw new NotFoundException('{{titleCase name}} tidak ditemukan');
-    }
-    return data;
-  }
+async findOne(id: number) {
+const data = await this.prismaService.{{camelCase name}}.findUnique({
+where: { id },
+});
+if (!data) {
+throw new NotFoundException('{{titleCase name}} tidak ditemukan');
+}
+return data;
+}
 
-  async update(id: number, updateDto: Update{{pascalCase name}}Dto) {
-    await this.findOne(id);
-    return await this.prismaService.{{camelCase name}}.update({
-      where: { id },
-      data: updateDto,
-    });
-  }
+async update(id: number, updateDto: Update{{pascalCase name}}Dto) {
+await this.findOne(id);
+return await this.prismaService.{{camelCase name}}.update({
+where: { id },
+data: updateDto,
+});
+}
 
-  async remove(id: number) {
-    await this.findOne(id);
-    return await this.prismaService.{{camelCase name}}.delete({
-      where: { id },
-    });
-  }
+async remove(id: number) {
+await this.findOne(id);
+return await this.prismaService.{{camelCase name}}.delete({
+where: { id },
+});
+}
 }

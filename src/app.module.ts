@@ -22,12 +22,16 @@ import { LetterAttributeSubmissionModule } from './letter-attribute-submission/l
 import { InstitutionModule } from './institution/institution.module';
 import { LetterAttachmentModule } from './letter-attachment/letter-attachment.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { AnnouncementModule } from './announcement/announcement.module';
+import { NodesModule } from './nodes/nodes.module';
+import { HomeModule } from './home/home.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    HomeModule,
     AuthModule,
     PrismaModule,
     InstitutionModule,
@@ -46,7 +50,9 @@ import { DashboardModule } from './dashboard/dashboard.module';
     LetterAttributeSubmissionModule,
     LetterAttributeSubmissionModule,
     LetterAttachmentModule,
-    DashboardModule
+    DashboardModule,
+    AnnouncementModule,
+    NodesModule,
   ],
   providers: [
     FileUploadService,

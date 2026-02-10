@@ -7,10 +7,10 @@ import { CreateStudentLetterSubmissionDto } from './dto/create-student-letter-su
 import { UpdateStudentLetterSubmissionDto } from './dto/update-student-letter-submission.dto';
 import { VerifyStudentLetterSubmissionDto } from './dto/verify-student-letter-submission.dto';
 import { ChangeStatusStudentLetterSubmissionDto } from './dto/change-status-student-letter-submission.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { QueryStudentLetterSubmissionDto } from './dto/query-student-letter-submission.dto';
 import { Prisma, SignatureType } from '@prisma/client';
-import { LetterTemplateService } from 'src/common/services/letter-template.service';
+import { LetterTemplateService } from '../common/services/letter-template.service';
 import { randomUUID } from 'crypto';
 import * as fs from 'fs';
 import { join } from 'path';

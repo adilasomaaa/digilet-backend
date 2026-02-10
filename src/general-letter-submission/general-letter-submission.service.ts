@@ -5,10 +5,10 @@ import {
 } from '@nestjs/common';
 import { CreateGeneralLetterSubmissionDto } from './dto/create-general-letter-submission.dto';
 import { UpdateGeneralLetterSubmissionDto } from './dto/update-general-letter-submission.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { QueryGeneralLetterSubmissionDto } from './dto/query-general-letter-submission.dto';
 import { Prisma } from '@prisma/client';
-import { LetterTemplateService } from 'src/common/services/letter-template.service';
+import { LetterTemplateService } from '../common/services/letter-template.service';
 import { randomUUID } from 'crypto';
 import { UpdateCCGeneralLetterSubmissionDto } from './dto/update-cc-general-letter-submission.dto';
 

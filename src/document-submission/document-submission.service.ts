@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateDocumentSubmissionDto } from './dto/create-document-submission.dto';
 import { UpdateDocumentSubmissionDto } from './dto/update-document-submission.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { QueryDocumentSubmissionDto } from './dto/query-document-submission.dto';
 import { Prisma } from '@prisma/client';
 import * as fs from 'fs';

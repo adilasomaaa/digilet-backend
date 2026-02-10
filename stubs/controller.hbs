@@ -1,70 +1,70 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  Query,
+Controller,
+Get,
+Post,
+Body,
+Patch,
+Param,
+Delete,
+UseGuards,
+Query,
 } from '@nestjs/common';
 import { {{pascalCase name}}Service } from './{{kebabCase name}}.service';
 import { Create{{pascalCase name}}Dto } from './dto/create-{{kebabCase name}}.dto';
 import { Update{{pascalCase name}}Dto } from './dto/update-{{kebabCase name}}.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { ApiResponse } from 'src/common/helpers/api-response.helper';
+import { ApiResponse } from '../common/helpers/api-response.helper';
 import { Query{{pascalCase name}}Dto } from './dto/query-{{kebabCase name}}.dto';
 
 @Controller('api/{{kebabCase name}}')
 export class {{pascalCase name}}Controller {
-  constructor(private readonly {{camelCase name}}Service: {{pascalCase name}}Service) {}
+constructor(private readonly {{camelCase name}}Service: {{pascalCase name}}Service) {}
 
-  @Post()
-  @UseGuards(AuthGuard('jwt'))
-  @ApiBearerAuth('JWT-auth')
-  async create(@Body() createDto: Create{{pascalCase name}}Dto) {
-    await this.{{camelCase name}}Service.create(createDto);
-    return ApiResponse.success('{{titleCase name}} berhasil dibuat');
-  }
+@Post()
+@UseGuards(AuthGuard('jwt'))
+@ApiBearerAuth('JWT-auth')
+async create(@Body() createDto: Create{{pascalCase name}}Dto) {
+await this.{{camelCase name}}Service.create(createDto);
+return ApiResponse.success('{{titleCase name}} berhasil dibuat');
+}
 
-  @Get()
-  @UseGuards(AuthGuard('jwt'))
-  @ApiBearerAuth('JWT-auth')
-  async findAll(@Query() query: Query{{pascalCase name}}Dto) {
-    const result = await this.{{camelCase name}}Service.findAll(query);
-    return ApiResponse.successWithPaginate(
-      '{{titleCase name}} berhasil diambil',
-      result.data,
-      result.meta,
-    );
-  }
+@Get()
+@UseGuards(AuthGuard('jwt'))
+@ApiBearerAuth('JWT-auth')
+async findAll(@Query() query: Query{{pascalCase name}}Dto) {
+const result = await this.{{camelCase name}}Service.findAll(query);
+return ApiResponse.successWithPaginate(
+'{{titleCase name}} berhasil diambil',
+result.data,
+result.meta,
+);
+}
 
-  @Get(':id')
-  @UseGuards(AuthGuard('jwt'))
-  @ApiBearerAuth('JWT-auth')
-  async findOne(@Param('id') id: string) {
-    const data = await this.{{camelCase name}}Service.findOne(+id);
-    return ApiResponse.successWithData('{{titleCase name}} berhasil diambil', data);
-  }
+@Get(':id')
+@UseGuards(AuthGuard('jwt'))
+@ApiBearerAuth('JWT-auth')
+async findOne(@Param('id') id: string) {
+const data = await this.{{camelCase name}}Service.findOne(+id);
+return ApiResponse.successWithData('{{titleCase name}} berhasil diambil', data);
+}
 
-  @Patch(':id')
-  @UseGuards(AuthGuard('jwt'))
-  @ApiBearerAuth('JWT-auth')
-  async update(
-    @Param('id') id: string,
-    @Body() updateDto: Update{{pascalCase name}}Dto,
-  ) {
-    await this.{{camelCase name}}Service.update(+id, updateDto);
-    return ApiResponse.success('{{titleCase name}} berhasil diubah');
-  }
+@Patch(':id')
+@UseGuards(AuthGuard('jwt'))
+@ApiBearerAuth('JWT-auth')
+async update(
+@Param('id') id: string,
+@Body() updateDto: Update{{pascalCase name}}Dto,
+) {
+await this.{{camelCase name}}Service.update(+id, updateDto);
+return ApiResponse.success('{{titleCase name}} berhasil diubah');
+}
 
-  @Delete(':id')
-  @UseGuards(AuthGuard('jwt'))
-  @ApiBearerAuth('JWT-auth')
-  async remove(@Param('id') id: string) {
-    await this.{{camelCase name}}Service.remove(+id);
-    return ApiResponse.success('{{titleCase name}} berhasil dihapus');
-  }
+@Delete(':id')
+@UseGuards(AuthGuard('jwt'))
+@ApiBearerAuth('JWT-auth')
+async remove(@Param('id') id: string) {
+await this.{{camelCase name}}Service.remove(+id);
+return ApiResponse.success('{{titleCase name}} berhasil dihapus');
+}
 }

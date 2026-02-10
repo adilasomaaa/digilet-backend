@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateLetterAttributeDto } from './dto/create-letter-attribute.dto';
 import { UpdateLetterAttributeDto } from './dto/update-letter-attribute.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { QueryLetterAttributeDto } from './dto/query-letter-attribute.dto';
 import { Prisma } from '@prisma/client';
 

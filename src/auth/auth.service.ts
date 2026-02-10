@@ -6,7 +6,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { User } from '@prisma/client';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -138,6 +138,9 @@ export class AuthService {
   ): Promise<void> {
     const user = await this.prisma.raw.user.findUnique({
       where: { id: id },
+      include: {
+        activeTokens: true,
+      },
     });
 
     if (!user || !user.password) {
@@ -161,6 +164,8 @@ export class AuthService {
       where: { id: id },
       data: { password: hashedNewPassword },
     });
+
+    // return this.logout(user.activeTokens[0].token);
   }
 
   async updateProfile(id: number, updateProfileDto: UpdateProfileDto): Promise<any> {

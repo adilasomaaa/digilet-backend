@@ -44,6 +44,18 @@ enum LetterStatus {
   private
 }
 
+enum AnnouncementVisibleStatus {
+  public
+  student
+}
+
+enum NodeTypes {
+  link
+  folder
+  image
+  pdf
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -59,6 +71,8 @@ model User {
   generalLetterSubmissions GeneralLetterSubmission[]
   letters                  Letter[]
   letterHeads              LetterHead[]
+  nodes                    Nodes[]
+  announcements            Announcement[]
 }
 
 model Institution {
@@ -75,6 +89,7 @@ model Institution {
   letterHeads              LetterHead[]
   letters                  Letter[]
   generalLetterSubmissions GeneralLetterSubmission[]
+  announcements            Announcement[]
 }
 
 model Personnel {
@@ -344,4 +359,35 @@ model LetterAttributeSubmission {
   content                   String
   createdAt                 DateTime                 @default(now())
   updatedAt                 DateTime                 @updatedAt
+}
+
+model Announcement {
+  id            Int                       @id @default(autoincrement())
+  institutionId Int
+  institution   Institution               @relation(fields: [institutionId], references: [id])
+  userId        Int
+  user          User                      @relation(fields: [userId], references: [id])
+  content       String                    @db.LongText
+  visibleAt     AnnouncementVisibleStatus
+  status        Boolean
+  file          String?
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+}
+
+model Nodes {
+  id        Int       @id @default(autoincrement())
+  name      String
+  type      NodeTypes
+  parentId  Int?
+  parent    Nodes?    @relation("ParentChild", fields: [parentId], references: [id])
+  children  Nodes[]   @relation("ParentChild")
+  path      String?
+  mimeType  String?
+  size      String?
+  ownerId   Int
+  owner     User      @relation(fields: [ownerId], references: [id])
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }

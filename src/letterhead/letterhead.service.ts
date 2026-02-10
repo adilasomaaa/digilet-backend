@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { CreateLetterheadDto } from './dto/create-letterhead.dto';
 import { UpdateLetterheadDto } from './dto/update-letterhead.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { QueryLetterheadDto } from './dto/query-letterhead.dto';
 import { Prisma } from '@prisma/client';
 import * as fs from 'fs';
