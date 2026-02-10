@@ -15,6 +15,7 @@ import { randomUUID } from 'crypto';
 import * as fs from 'fs';
 import { join } from 'path';
 import { UpdateCCStudentLetterSubmissionDto } from './dto/update-cc-student-letter-submission.dto';
+import { getAccessibleInstitutionIds } from '../common/helpers/institution-access.helper';
 
 @Injectable()
 export class StudentLetterSubmissionService {
@@ -249,10 +250,28 @@ export class StudentLetterSubmissionService {
       ];
     }
 
-    if (user.roles.name === 'personnel') {
-      where.letter = {
-        institutionId: user.personnel.institutionId,
-      };
+    // Apply hierarchical institution filtering for personnel
+    if (user?.personnel) {
+      const personnel = await this.prismaService.personnel.findUnique({
+        where: { id: user.personnel.id },
+        include: { institution: true },
+      });
+
+      if (personnel?.institution) {
+        const accessibleIds = await getAccessibleInstitutionIds(
+          this.prismaService,
+          personnel.institutionId!,
+          personnel.institution.type,
+        );
+
+        if (accessibleIds !== null) {
+          // Filter by student's institution being in accessible institutions
+          where.student = {
+            institutionId: { in: accessibleIds },
+          };
+        }
+        // If accessibleIds is null, no filter is applied (full access)
+      }
     }
 
     if (user.roles.name === 'student') {

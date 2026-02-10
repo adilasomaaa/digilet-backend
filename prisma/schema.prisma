@@ -76,12 +76,16 @@ model User {
 }
 
 model Institution {
-  id        Int             @id @default(autoincrement())
-  name      String          @unique
-  address   String?
-  type      InstitutionType
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  id       Int             @id @default(autoincrement())
+  name     String          @unique
+  address  String?
+  type     InstitutionType
+  parentId Int?
+  parent   Institution?    @relation("InstitutionHierarchy", fields: [parentId], references: [id])
+  children Institution[]   @relation("InstitutionHierarchy")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   personnels               Personnel[]
   officials                Official[]

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { InstitutionType } from '@prisma/client';
-import { IsIn, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsIn, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateInstitutionDto {
   @ApiProperty({
@@ -27,4 +27,13 @@ export class CreateInstitutionDto {
       'tipe harus berupa faculty, study_program, university, atau institution',
   })
   type: InstitutionType;
+
+  @ApiProperty({
+    example: 1,
+    description: 'ID institution parent (untuk hierarki)',
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber({}, { message: 'Parent ID harus berupa angka' })
+  parentId?: number;
 }

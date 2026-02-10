@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   Req,
@@ -11,6 +12,10 @@ import { QueryLetterheadDto } from './dto/query-letterhead.dto';
 import { Prisma } from '@prisma/client';
 import * as fs from 'fs';
 import { join } from 'path';
+import {
+  getAccessibleInstitutionIds,
+  hasWritePermission,
+} from '../common/helpers/institution-access.helper';
 
 @Injectable()
 export class LetterheadService {
@@ -29,9 +34,60 @@ export class LetterheadService {
       throw new ConflictException('Logo tidak ditemukan');
     }
 
-    const userId = user.id;
-    const institutionId = user.personnel.institutionId;
+    // Check write permission for personnel
+    if (user?.personnel) {
+      const personnel = await this.prismaService.personnel.findUnique({
+        where: { id: user.personnel.id },
+        include: { institution: true },
+      });
 
+      if (!personnel?.institution) {
+        throw new ForbiddenException(
+          'Personnel harus memiliki institution untuk membuat letterhead.',
+        );
+      }
+
+      if (!hasWritePermission(personnel.institution.type)) {
+        throw new ForbiddenException(
+          'Anda tidak memiliki izin untuk menambah kop surat.',
+        );
+      }
+
+      // Determine institutionId
+      let targetInstitutionId: number;
+      if (createDto.institutionId) {
+        // Faculty operator selecting institution
+        const accessibleIds = await getAccessibleInstitutionIds(
+          this.prismaService,
+          personnel.institutionId!,
+          personnel.institution.type,
+        );
+
+        if (accessibleIds && !accessibleIds.includes(createDto.institutionId)) {
+          throw new ForbiddenException(
+            'Anda tidak memiliki akses ke institution tersebut.',
+          );
+        }
+        targetInstitutionId = createDto.institutionId;
+      } else {
+        // Study program operator - use own institution
+        targetInstitutionId = personnel.institutionId!;
+      }
+
+      const userId = user.id;
+      const { institutionId, ...rest } = createDto;
+      return await this.prismaService.letterHead.create({
+        data: {
+          ...rest,
+          userId,
+          institutionId: targetInstitutionId,
+        },
+      });
+    }
+
+    // Admin or other roles
+    const userId = user.id;
+    const institutionId = createDto.institutionId || user.personnel?.institutionId;
     return await this.prismaService.letterHead.create({
       data: {
         ...createDto,
@@ -54,8 +110,24 @@ export class LetterheadService {
       where.institutionId = institutionId;
     }
 
-    if (user.roles.name !== 'admin') {
-      where.institutionId = user.personnel.institutionId;
+    // Apply hierarchical institution filtering for personnel
+    if (user?.personnel) {
+      const personnel = await this.prismaService.personnel.findUnique({
+        where: { id: user.personnel.id },
+        include: { institution: true },
+      });
+
+      if (personnel?.institution) {
+        const accessibleIds = await getAccessibleInstitutionIds(
+          this.prismaService,
+          personnel.institutionId!,
+          personnel.institution.type,
+        );
+
+        if (accessibleIds !== null) {
+          where.institutionId = { in: accessibleIds };
+        }
+      }
     }
 
     const [data, total] = await this.prismaService.$transaction([
@@ -69,7 +141,7 @@ export class LetterheadService {
         },
         where,
       }),
-      this.prismaService.letterHead.count(),
+      this.prismaService.letterHead.count({ where }),
     ]);
 
     return {
@@ -101,8 +173,49 @@ export class LetterheadService {
     id: number,
     updateDto: UpdateLetterheadDto,
     logo?: Express.Multer.File,
+    user?: any,
   ) {
     const data = await this.findOne(id);
+
+    // Check write permission for personnel
+    if (user?.personnel) {
+      const personnel = await this.prismaService.personnel.findUnique({
+        where: { id: user.personnel.id },
+        include: { institution: true },
+      });
+
+      if (!personnel?.institution) {
+        throw new ForbiddenException(
+          'Personnel harus memiliki institution untuk mengubah letterhead.',
+        );
+      }
+
+      if (!hasWritePermission(personnel.institution.type)) {
+        throw new ForbiddenException(
+          'Anda tidak memiliki izin untuk mengubah kop surat.',
+        );
+      }
+
+      const accessibleIds = await getAccessibleInstitutionIds(
+        this.prismaService,
+        personnel.institutionId!,
+        personnel.institution.type,
+      );
+
+      if (accessibleIds) {
+        if (!accessibleIds.includes(data.institutionId!)) {
+          throw new ForbiddenException(
+            'Anda tidak memiliki akses ke kop surat ini.',
+          );
+        }
+        if (updateDto.institutionId && !accessibleIds.includes(updateDto.institutionId)) {
+          throw new ForbiddenException(
+            'Anda tidak memiliki akses ke institution tujuan.',
+          );
+        }
+      }
+    }
+
     if (logo) {
       const fullPath = logo.path;
       const cleanedPath = fullPath.replace('public/', '');
@@ -130,8 +243,41 @@ export class LetterheadService {
     });
   }
 
-  async remove(id: number) {
-    await this.findOne(id);
+  async remove(id: number, user?: any) {
+    const letterhead = await this.findOne(id);
+
+    // Check write permission for personnel
+    if (user?.personnel) {
+      const personnel = await this.prismaService.personnel.findUnique({
+        where: { id: user.personnel.id },
+        include: { institution: true },
+      });
+
+      if (!personnel?.institution) {
+        throw new ForbiddenException(
+          'Personnel harus memiliki institution untuk menghapus letterhead.',
+        );
+      }
+
+      if (!hasWritePermission(personnel.institution.type)) {
+        throw new ForbiddenException(
+          'Anda tidak memiliki izin untuk menghapus kop surat.',
+        );
+      }
+
+      const accessibleIds = await getAccessibleInstitutionIds(
+        this.prismaService,
+        personnel.institutionId!,
+        personnel.institution.type,
+      );
+
+      if (accessibleIds && !accessibleIds.includes(letterhead.institutionId!)) {
+        throw new ForbiddenException(
+          'Anda tidak memiliki akses ke kop surat ini.',
+        );
+      }
+    }
+
     return await this.prismaService.letterHead.delete({
       where: { id },
     });

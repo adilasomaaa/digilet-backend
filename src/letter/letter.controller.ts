@@ -53,16 +53,20 @@ export class LetterController {
   @Patch(':id')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
-  async update(@Param('id') id: string, @Body() updateDto: UpdateLetterDto) {
-    await this.letterService.update(+id, updateDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updateDto: UpdateLetterDto,
+    @Req() req: any,
+  ) {
+    await this.letterService.update(+id, updateDto, req.user);
     return ApiResponse.success('Letter berhasil diubah');
   }
 
   @Delete(':id')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
-  async remove(@Param('id') id: string) {
-    await this.letterService.remove(+id);
+  async remove(@Param('id') id: string, @Req() req: any) {
+    await this.letterService.remove(+id, req.user);
     return ApiResponse.success('Letter berhasil dihapus');
   }
 }

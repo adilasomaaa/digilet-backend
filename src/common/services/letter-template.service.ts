@@ -69,6 +69,14 @@ export class LetterTemplateService {
 
     const processedContent = this.replacePlaceholders(letterContent, data);
 
+    // Check if there are any center signatures
+    const hasCenterSignatures = signatures.some(
+      (sig) => sig.position === 'tengah-atas' || sig.position === 'tengah-bawah'
+    );
+
+    // Determine grid columns based on center signature presence
+    const gridColumns = hasCenterSignatures ? 3 : 2;
+
     // Process carbonCopy: check if it's an array or string
     let carbonCopyHtml = '';
     if (carbonCopy) {
@@ -228,24 +236,35 @@ export class LetterTemplateService {
         }
         .signatures {
           display: grid;
-          grid-template-columns: repeat(3, 1fr); /* 3 Kolom */
-          grid-template-rows: auto auto;         /* 2 Baris */
+          grid-template-columns: repeat(${gridColumns}, 1fr);
+          grid-template-rows: auto auto;
           gap: 5px;
         }
 
-        /* Mapping posisi berdasarkan label value */
+        /* Mapping posisi untuk 3 kolom */
         .sig-kiri-atas   { grid-column: 1; grid-row: 1; }
         .sig-tengah-atas  { grid-column: 2; grid-row: 1; }
         .sig-kanan-atas  { grid-column: 3; grid-row: 1; }
         .sig-kiri-bawah  { grid-column: 1; grid-row: 2; }
         .sig-tengah-bawah { grid-column: 2; grid-row: 2; }
         .sig-kanan-bawah { grid-column: 3; grid-row: 2; }
+        
+        /* Override untuk 2 kolom - kanan tetap di kolom 2 */
+        ${gridColumns === 2 ? `
+        .signatures .sig-kanan-atas {
+          grid-column: 2 !important;
+        }
+        .signatures .sig-kanan-bawah {
+          grid-column: 2 !important;
+        }
+        ` : ''}
 
         .signature-block {
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
         }
 
         .acknowledgment-text {
@@ -377,7 +396,7 @@ export class LetterTemplateService {
             ${processedContent}
         </div>
 
-        <div class="signatures">
+        <div class="signatures ${gridColumns === 2 ? 'two-column' : ''}">
           ${signatures
             .map((sig: any) => {
               console.log(sig.isAcknowledged);
@@ -452,7 +471,6 @@ export class LetterTemplateService {
 
   private getImagePath(imagePath: string, baseUrl: string): string {
     if (!imagePath) return '';
-    console.log(`${baseUrl}/${imagePath.replace(/^\//, '')}`);
 
     return `${baseUrl}/${imagePath.replace(/^\//, '')}`;
   }

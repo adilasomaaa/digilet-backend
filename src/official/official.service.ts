@@ -4,6 +4,7 @@ import { UpdateOfficialDto } from './dto/update-official.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { QueryOfficialDto } from './dto/query-official.dto';
 import { Prisma } from '@prisma/client';
+import { getAccessibleInstitutionIds } from 'src/common/helpers/institution-access.helper';
 
 @Injectable()
 export class OfficialService {
@@ -24,8 +25,23 @@ export class OfficialService {
       where.OR = [{ name: { contains: search } }];
     }
 
-    if(user.roles.name == 'personnel') {
-      where.institutionId = user.personnel.institutionId;
+    if (user?.personnel) {
+      const personnel = await this.prismaService.personnel.findUnique({
+        where: { id: user.personnel.id },
+        include: { institution: true },
+      });
+
+      if (personnel?.institution) {
+        const accessibleIds = await getAccessibleInstitutionIds(
+          this.prismaService,
+          personnel.institutionId!,
+          personnel.institution.type,
+        );
+
+        if (accessibleIds !== null) {
+          where.institutionId = { in: accessibleIds };
+        }
+      }
     }
 
     const [data, total] = await this.prismaService.$transaction([

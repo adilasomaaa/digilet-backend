@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -11,6 +12,10 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { Prisma } from '@prisma/client';
 import * as ExcelJS from 'exceljs';
+import {
+  getAccessibleInstitutionIds,
+  hasWritePermission,
+} from '../common/helpers/institution-access.helper';
 
 @Injectable()
 export class StudentService {
@@ -19,7 +24,44 @@ export class StudentService {
     private configService: ConfigService,
   ) {}
 
-  async create(createDto: CreateStudentDto) {
+  async create(createDto: CreateStudentDto, user?: any) {
+    // Check write permission for personnel
+    if (user?.personnel) {
+      const personnel = await this.prismaService.personnel.findUnique({
+        where: { id: user.personnel.id },
+        include: { institution: true },
+      });
+
+      if (!personnel?.institution) {
+        throw new ForbiddenException(
+          'Personnel harus memiliki institution untuk membuat student.',
+        );
+      }
+
+      // Check if personnel has write permission
+      if (!hasWritePermission(personnel.institution.type)) {
+        throw new ForbiddenException(
+          'Anda tidak memiliki izin untuk menambah data mahasiswa.',
+        );
+      }
+
+      // Check if target institution is accessible
+      const accessibleIds = await getAccessibleInstitutionIds(
+        this.prismaService,
+        personnel.institutionId!,
+        personnel.institution.type,
+      );
+
+      if (
+        accessibleIds &&
+        !accessibleIds.includes(createDto.institutionId)
+      ) {
+        throw new ForbiddenException(
+          'Anda tidak memiliki akses ke institution tersebut.',
+        );
+      }
+    }
+
     const { email, nim } = createDto;
 
     const existingStudent = await this.prismaService.student.findFirst({
@@ -52,7 +94,7 @@ export class StudentService {
       this.configService.get<string>('DEFAULT_PASSWORD') || 'umgo2025!';
 
     const hashedPassword = await this.hashPassword(defaultPassword);
-    const [user, student] = await this.prismaService.$transaction(
+    const [createdUser, student] = await this.prismaService.$transaction(
       async (tx) => {
         const newUser = await tx.user.create({
           data: {
@@ -112,8 +154,26 @@ export class StudentService {
       ];
     }
 
-    if(user.roles.name === 'personnel') {
-      where.institutionId = user.personnel.institutionId;
+    // Apply hierarchical institution filtering for personnel
+    if (user?.personnel) {
+      const personnel = await this.prismaService.personnel.findUnique({
+        where: { id: user.personnel.id },
+        include: { institution: true },
+      });
+
+      if (personnel?.institution) {
+        const accessibleIds = await getAccessibleInstitutionIds(
+          this.prismaService,
+          personnel.institutionId!,
+          personnel.institution.type,
+        );
+
+        // If accessibleIds is null, it means access to all institutions
+        // Otherwise, filter by accessible institution IDs
+        if (accessibleIds !== null) {
+          where.institutionId = { in: accessibleIds };
+        }
+      }
     }
 
     const [data, total] = await this.prismaService.$transaction([
@@ -127,7 +187,7 @@ export class StudentService {
         where,
         orderBy: { createdAt: 'asc' },
       }),
-      this.prismaService.student.count(),
+      this.prismaService.student.count({ where }),
     ]);
 
     return {
@@ -152,9 +212,7 @@ export class StudentService {
     return data;
   }
 
-  async update(id: number, updateDto: UpdateStudentDto) {
-    const { email, nim } = updateDto;
-
+  async update(id: number, updateDto: UpdateStudentDto, user?: any) {
     const student = await this.prismaService.student.findUnique({
       where: { id },
     });
@@ -162,6 +220,49 @@ export class StudentService {
     if (!student) {
       throw new NotFoundException('Student tidak ditemukan');
     }
+
+    // Check write permission for personnel
+    if (user?.personnel) {
+      const personnel = await this.prismaService.personnel.findUnique({
+        where: { id: user.personnel.id },
+        include: { institution: true },
+      });
+
+      if (!personnel?.institution) {
+        throw new ForbiddenException(
+          'Personnel harus memiliki institution untuk mengubah student.',
+        );
+      }
+
+      // Check if personnel has write permission
+      if (!hasWritePermission(personnel.institution.type)) {
+        throw new ForbiddenException(
+          'Anda tidak memiliki izin untuk mengubah data mahasiswa.',
+        );
+      }
+
+      // Check if current and target institutions are accessible
+      const accessibleIds = await getAccessibleInstitutionIds(
+        this.prismaService,
+        personnel.institutionId!,
+        personnel.institution.type,
+      );
+
+      if (accessibleIds) {
+        if (!accessibleIds.includes(student.institutionId)) {
+          throw new ForbiddenException(
+            'Anda tidak memiliki akses ke mahasiswa ini.',
+          );
+        }
+        if (updateDto.institutionId && !accessibleIds.includes(updateDto.institutionId)) {
+          throw new ForbiddenException(
+            'Anda tidak memiliki akses ke institution tujuan.',
+          );
+        }
+      }
+    }
+
+    const { email, nim } = updateDto;
 
     const existingStudent = await this.prismaService.student.findFirst({
       where: {
@@ -190,7 +291,7 @@ export class StudentService {
       ? new Date(updateDto.birthday)
       : undefined;
 
-    const [user, updatedStudent] = await this.prismaService.$transaction(
+    const [updatedUser, updatedStudent] = await this.prismaService.$transaction(
       async (tx) => {
         const newUser = await tx.user.update({
           where: { id: student.userId },
@@ -222,10 +323,45 @@ export class StudentService {
     return updatedStudent;
   }
 
-  async remove(id: number) {
-    const student = this.findOne(id);
+  async remove(id: number, user?: any) {
+    const student = await this.findOne(id);
+
+    // Check write permission for personnel
+    if (user?.personnel) {
+      const personnel = await this.prismaService.personnel.findUnique({
+        where: { id: user.personnel.id },
+        include: { institution: true },
+      });
+
+      if (!personnel?.institution) {
+        throw new ForbiddenException(
+          'Personnel harus memiliki institution untuk menghapus student.',
+        );
+      }
+
+      // Check if personnel has write permission
+      if (!hasWritePermission(personnel.institution.type)) {
+        throw new ForbiddenException(
+          'Anda tidak memiliki izin untuk menghapus data mahasiswa.',
+        );
+      }
+
+      // Check if student's institution is accessible
+      const accessibleIds = await getAccessibleInstitutionIds(
+        this.prismaService,
+        personnel.institutionId!,
+        personnel.institution.type,
+      );
+
+      if (accessibleIds && !accessibleIds.includes(student.institutionId)) {
+        throw new ForbiddenException(
+          'Anda tidak memiliki akses ke mahasiswa ini.',
+        );
+      }
+    }
+
     return await this.prismaService.user.delete({
-      where: { id: (await student).userId },
+      where: { id: student.userId },
     });
   }
 

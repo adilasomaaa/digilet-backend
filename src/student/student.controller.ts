@@ -32,8 +32,8 @@ export class StudentController {
   @Post()
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
-  async create(@Body() createDto: CreateStudentDto) {
-    await this.studentService.create(createDto);
+  async create(@Body() createDto: CreateStudentDto, @Req() req: any) {
+    await this.studentService.create(createDto, req.user);
     return ApiResponse.success('Student berhasil dibuat');
   }
 
@@ -60,16 +60,20 @@ export class StudentController {
   @Patch(':id')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
-  async update(@Param('id') id: string, @Body() updateDto: UpdateStudentDto) {
-    await this.studentService.update(+id, updateDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updateDto: UpdateStudentDto,
+    @Req() req: any,
+  ) {
+    await this.studentService.update(+id, updateDto, req.user);
     return ApiResponse.success('Student berhasil diubah');
   }
 
   @Delete(':id')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
-  async remove(@Param('id') id: string) {
-    await this.studentService.remove(+id);
+  async remove(@Param('id') id: string, @Req() req: any) {
+    await this.studentService.remove(+id, req.user);
     return ApiResponse.success('Student berhasil dihapus');
   }
 

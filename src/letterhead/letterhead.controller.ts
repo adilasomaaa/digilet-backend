@@ -77,16 +77,17 @@ export class LetterheadController {
     @Param('id') id: string,
     @Body() updateDto: UpdateLetterheadDto,
     @UploadedFile() logo: Express.Multer.File,
+    @Req() req: any,
   ) {
-    await this.letterheadService.update(+id, updateDto, logo);
+    await this.letterheadService.update(+id, updateDto, logo, req.user);
     return ApiResponse.success('Kop Surat berhasil diubah');
   }
 
   @Delete(':id')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
-  async remove(@Param('id') id: string) {
-    await this.letterheadService.remove(+id);
+  async remove(@Param('id') id: string, @Req() req: any) {
+    await this.letterheadService.remove(+id, req.user);
     return ApiResponse.success('Kop Surat berhasil dihapus');
   }
 }

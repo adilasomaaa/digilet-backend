@@ -28,4 +28,13 @@ export class CreateLetterheadDto {
   })
   @IsOptional()
   logo: string;
+
+  @ApiProperty({
+    example: 1,
+    description: 'ID institution (untuk operator fakultas)',
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber({}, { message: 'Institution ID harus berupa angka' })
+  institutionId?: number;
 }

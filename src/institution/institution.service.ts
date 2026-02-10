@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { CreateInstitutionDto } from './dto/create-institution.dto';
 import { QueryInstitutionDto } from './dto/query-institution.dto';
 import { UpdateInstitutionDto } from './dto/update-institution.dto';
+import { getAccessibleInstitutionIds } from '../common/helpers/institution-access.helper';
 
 @Injectable()
 export class InstitutionService {
@@ -24,8 +25,25 @@ export class InstitutionService {
       where.OR = [{ name: { contains: search } }];
     }
 
-    if(user.roles.name == 'personnel') {
-      where.id = user.personnel.institutionId;
+    // Apply hierarchical institution filtering for personnel
+    if (user?.personnel) {
+      const personnel = await this.prismaService.personnel.findUnique({
+        where: { id: user.personnel.id },
+        include: { institution: true },
+      });
+
+      if (personnel?.institution) {
+        const accessibleIds = await getAccessibleInstitutionIds(
+          this.prismaService,
+          personnel.institutionId!,
+          personnel.institution.type,
+        );
+
+        if (accessibleIds !== null) {
+          where.id = { in: accessibleIds };
+        }
+        // If accessibleIds is null, no filter is applied (full access)
+      }
     }
 
     const [data, total] = await this.prismaService.$transaction([
@@ -35,7 +53,7 @@ export class InstitutionService {
         where,
         orderBy: { createdAt: 'asc' },
       }),
-      this.prismaService.institution.count(),
+      this.prismaService.institution.count({ where }),
     ]);
 
     return {

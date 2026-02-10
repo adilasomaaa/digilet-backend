@@ -11,6 +11,7 @@ import { Prisma } from '@prisma/client';
 import { LetterTemplateService } from '../common/services/letter-template.service';
 import { randomUUID } from 'crypto';
 import { UpdateCCGeneralLetterSubmissionDto } from './dto/update-cc-general-letter-submission.dto';
+import { getAccessibleInstitutionIds } from '../common/helpers/institution-access.helper';
 
 @Injectable()
 export class GeneralLetterSubmissionService {
@@ -85,8 +86,25 @@ export class GeneralLetterSubmissionService {
 
     const where: Prisma.GeneralLetterSubmissionWhereInput = {};
 
-    if (user.roles.name !== 'admin') {
-      where.institutionId = user.personnel.institutionId;
+    // Apply hierarchical institution filtering for personnel
+    if (user?.personnel) {
+      const personnel = await this.prismaService.personnel.findUnique({
+        where: { id: user.personnel.id },
+        include: { institution: true },
+      });
+
+      if (personnel?.institution) {
+        const accessibleIds = await getAccessibleInstitutionIds(
+          this.prismaService,
+          personnel.institutionId!,
+          personnel.institution.type,
+        );
+
+        if (accessibleIds !== null) {
+          where.institutionId = { in: accessibleIds };
+        }
+        // If accessibleIds is null, no filter is applied (full access)
+      }
     }
 
     if (search) {
