@@ -191,12 +191,12 @@ model ActiveToken {
 
 model Letter {
   id                   Int            @id @default(autoincrement())
-  institution          Institution    @relation(fields: [institutionId], references: [id])
+  institution          Institution    @relation(fields: [institutionId], references: [id], onDelete: Cascade)
   institutionId        Int
-  user                 User           @relation(fields: [userId], references: [id])
+  user                 User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId               Int
   letterHeadId         Int?
-  letterHead           LetterHead?    @relation(fields: [letterHeadId], references: [id])
+  letterHead           LetterHead?    @relation(fields: [letterHeadId], references: [id], onDelete: Cascade)
   letterName           String
   referenceNumber      String?
   expiredDate          Int?
@@ -216,8 +216,8 @@ model Letter {
 model LetterHead {
   id            Int          @id @default(autoincrement())
   institutionId Int?
-  institution   Institution? @relation(fields: [institutionId], references: [id])
-  user          User         @relation(fields: [userId], references: [id])
+  institution   Institution? @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId        Int
   name          String
   header        String
@@ -243,9 +243,9 @@ model StudentLetterSubmission {
   id                         Int                         @id @default(autoincrement())
   token                      String                      @unique
   studentId                  Int
-  student                    Student                     @relation(fields: [studentId], references: [id])
+  student                    Student                     @relation(fields: [studentId], references: [id], onDelete: Cascade)
   letterId                   Int
-  letter                     Letter                      @relation(fields: [letterId], references: [id])
+  letter                     Letter                      @relation(fields: [letterId], references: [id], onDelete: Cascade)
   letterNumber               String?
   letterDate                 DateTime?
   name                       String?
@@ -276,11 +276,11 @@ model GeneralLetterSubmission {
   id                         Int                         @id @default(autoincrement())
   token                      String                      @unique
   userId                     Int
-  user                       User                        @relation(fields: [userId], references: [id])
+  user                       User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
   institutionId              Int
-  institution                Institution                 @relation(fields: [institutionId], references: [id])
+  institution                Institution                 @relation(fields: [institutionId], references: [id], onDelete: Cascade)
   letterId                   Int
-  letter                     Letter                      @relation(fields: [letterId], references: [id])
+  letter                     Letter                      @relation(fields: [letterId], references: [id], onDelete: Cascade)
   letterNumber               String?
   name                       String?
   letterDate                 DateTime?
@@ -330,7 +330,7 @@ model DocumentSubmission {
   studentLetterSubmissionId Int
   studentLetterSubmission   StudentLetterSubmission @relation(fields: [studentLetterSubmissionId], references: [id], onDelete: Cascade)
   letterDocumentId          Int
-  letterDocument            LetterDocument          @relation(fields: [letterDocumentId], references: [id])
+  letterDocument            LetterDocument          @relation(fields: [letterDocumentId], references: [id], onDelete: Cascade)
   filePath                  String
   createdAt                 DateTime                @default(now())
   updatedAt                 DateTime                @updatedAt
@@ -339,7 +339,7 @@ model DocumentSubmission {
 model LetterAttribute {
   id                         Int                         @id @default(autoincrement())
   letterId                   Int
-  letter                     Letter                      @relation(fields: [letterId], references: [id])
+  letter                     Letter                      @relation(fields: [letterId], references: [id], onDelete: Cascade)
   attributeName              String
   placeholder                String
   label                      String
@@ -355,11 +355,11 @@ model LetterAttribute {
 model LetterAttributeSubmission {
   id                        Int                      @id @default(autoincrement())
   letterAttributeId         Int
-  letterAttribute           LetterAttribute          @relation(fields: [letterAttributeId], references: [id])
+  letterAttribute           LetterAttribute          @relation(fields: [letterAttributeId], references: [id], onDelete: Cascade)
   studentLetterSubmissionId Int?
-  studentLetterSubmission   StudentLetterSubmission? @relation(fields: [studentLetterSubmissionId], references: [id])
+  studentLetterSubmission   StudentLetterSubmission? @relation(fields: [studentLetterSubmissionId], references: [id], onDelete: Cascade)
   generalLetterSubmissionId Int?
-  generalLetterSubmission   GeneralLetterSubmission? @relation(fields: [generalLetterSubmissionId], references: [id])
+  generalLetterSubmission   GeneralLetterSubmission? @relation(fields: [generalLetterSubmissionId], references: [id], onDelete: Cascade)
   content                   String
   createdAt                 DateTime                 @default(now())
   updatedAt                 DateTime                 @updatedAt
@@ -368,9 +368,9 @@ model LetterAttributeSubmission {
 model Announcement {
   id            Int                       @id @default(autoincrement())
   institutionId Int
-  institution   Institution               @relation(fields: [institutionId], references: [id])
+  institution   Institution               @relation(fields: [institutionId], references: [id], onDelete: Cascade)
   userId        Int
-  user          User                      @relation(fields: [userId], references: [id])
+  user          User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
   content       String                    @db.LongText
   visibleAt     AnnouncementVisibleStatus
   status        Boolean
@@ -384,7 +384,7 @@ model Nodes {
   name      String
   type      NodeTypes
   parentId  Int?
-  parent    Nodes?    @relation("ParentChild", fields: [parentId], references: [id])
+  parent    Nodes?    @relation("ParentChild", fields: [parentId], references: [id], onDelete: Cascade)
   children  Nodes[]   @relation("ParentChild")
   path      String?
   mimeType  String?

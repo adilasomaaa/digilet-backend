@@ -6,7 +6,10 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import * as fs from 'fs';
 
+
 async function bootstrap() {
+  const cors = require('cors');
+
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.useGlobalPipes(
@@ -17,9 +20,17 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://172.16.0.221:3000'],
+    origin: ['http://localhost:5173', 'http://172.16.0.221:3000','https://digilet-fai.umgo.ac.id','https://digilet-fai.umgo.ac.id/'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
+    allowedHeaders: 'Content-Type, Accept, Authorization, Access-Control-Allow-Private-Network',
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  });
+
+  app.use((req:any, res:any, next:any) => {
+    res.header('Access-Control-Allow-Private-Network', 'true');
+    next();
   });
 
   const config = new DocumentBuilder()

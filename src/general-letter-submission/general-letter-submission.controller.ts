@@ -73,7 +73,7 @@ export class GeneralLetterSubmissionController {
     return res.send(html);
   }
 
-  @Get(':token/print-pdf')
+  @Get('print-pdf/:token')
   @Public()
   async printPdf(
     @Param('token') token: string,
