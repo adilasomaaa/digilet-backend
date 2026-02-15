@@ -1,5 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import puppeteer from 'puppeteer';
+
+import {
+  formatDate,
+  formatHijriDate,
+  escapeHtml,
+  getNestedValue,
+  getImagePath,
+} from './letter-template/utils';
 
 interface LetterAttributeData {
   placeholder: string;
@@ -54,18 +61,19 @@ export class LetterTemplateService {
     tanggal_hijriah: 'letterDateHijri'
   };
 
+  /**
+   * Generate HTML for print view
+   */
   generatePrintHtml(data: LetterPrintData, baseUrl: string): string {
     const {
       letterNumber,
-      recipientName,
-      recipientInfo,
       letterContent,
       letterhead,
       carbonCopy,
       attachments,
     } = data;
 
-    const { signatures, signatureType } = data;
+    const { signatures } = data;
 
     const processedContent = this.replacePlaceholders(letterContent, data);
 
@@ -81,16 +89,16 @@ export class LetterTemplateService {
     let carbonCopyHtml = '';
     if (carbonCopy) {
       if (Array.isArray(carbonCopy) && carbonCopy.length > 0) {
-         carbonCopyHtml = `
+        carbonCopyHtml = `
             <div class="carbon-copy">
                 <b>Tembusan:</b>
                 <ol>
-                    ${carbonCopy.map(cc => `<li>${cc}</li>`).join('')}
+                    ${carbonCopy.map((cc) => `<li>${cc}</li>`).join('')}
                 </ol>
             </div>`;
       } else if (typeof carbonCopy === 'string' && carbonCopy.trim() !== '') {
-          // Render as raw HTML
-          carbonCopyHtml = `
+        // Render as raw HTML
+        carbonCopyHtml = `
             <div class="carbon-copy">
                 ${carbonCopy}
             </div>`;
@@ -106,9 +114,6 @@ export class LetterTemplateService {
     <title>Surat - ${letterNumber || 'Surat'}</title>
     <style>
         @media print {
-            @page {
-                margin: 1cm 2cm;
-            }
             body {
                 margin: 0;
                 padding: 0;
@@ -124,7 +129,7 @@ export class LetterTemplateService {
             padding-bottom: 10px;
         }
         .header-logo {
-            flex: 0 0 80px; /* Lebar area logo */
+            flex: 0 0 80px;
             margin-right: 15px;
         }
         .header-logo img {
@@ -136,8 +141,7 @@ export class LetterTemplateService {
             flex: 1;
             text-align: center;
             line-height:1.2;
-            /* Kompensasi agar teks tetap di tengah meskipun ada logo di kiri */
-            margin-right: 80px; 
+            margin-right: 80px;
         }
         .header-univ { font-size: 12pt; font-weight: bold; margin: 0; }
         .header-fai { font-size: 14pt; font-weight: bold; margin: 0; }
@@ -147,7 +151,6 @@ export class LetterTemplateService {
             font-size: 12pt;
             line-height: 1.6;
             margin: 0;
-            // padding: 20px;
             color: #000;
         }
         .letter-container {
@@ -197,14 +200,12 @@ export class LetterTemplateService {
             min-height: 200px;
         }
 
-        /* 2. Menghilangkan indentasi otomatis jika Anda menggunakan tabel untuk layout */
         .letter-content p {
             margin-top: 0 !important;
-            margin-bottom: 2px !important; 
+            margin-bottom: 2px !important;
             line-height: 1.5 !important;
         }
 
-        /* 3. Atur Tabel agar tidak memiliki border secara default (untuk Tabel Informasi) */
         .letter-content figure.table {
             margin: 10px 0 !important;
             width: 100% !important;
@@ -225,11 +226,11 @@ export class LetterTemplateService {
         }
 
         .letter-content table td {
-            padding: 2px 4px; /* Spasi default, bisa di-override inline */
+            padding: 2px 4px;
             vertical-align: top;
-            border-style: solid; /* Default style to allow border-width to work */
-            border-width: 1px;     /* Default width 0 so borders are hidden unless specified inline */
-            border-color: #000;  /* Default color black so 1px borders are visible */
+            border-style: solid;
+            border-width: 1px;
+            border-color: #000;
         }
         .letter-content table td, strong {
             margin: 0;
@@ -241,7 +242,6 @@ export class LetterTemplateService {
           gap: 5px;
         }
 
-        /* Mapping posisi untuk 3 kolom */
         .sig-kiri-atas   { grid-column: 1; grid-row: 1; }
         .sig-tengah-atas  { grid-column: 2; grid-row: 1; }
         .sig-kanan-atas  { grid-column: 3; grid-row: 1; }
@@ -249,7 +249,6 @@ export class LetterTemplateService {
         .sig-tengah-bawah { grid-column: 2; grid-row: 2; }
         .sig-kanan-bawah { grid-column: 3; grid-row: 2; }
         
-        /* Override untuk 2 kolom - kanan tetap di kolom 2 */
         ${gridColumns === 2 ? `
         .signatures .sig-kanan-atas {
           grid-column: 2 !important;
@@ -287,42 +286,23 @@ export class LetterTemplateService {
         .signature-block .official-nip {
             font-size: 10pt;
         }
-        .print-button {
-            text-align: center;
-            margin: 20px 0;
-        }
-        .print-button button {
-            padding: 10px 20px;
-            font-size: 14pt;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .print-button button:hover {
-            background-color: #0056b3;
-        }
         .signature-wrapper {
-            height: 65px; /* Area penampung yang lebih tinggi */
+            height: 65px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        /* Style untuk Tanda Tangan Digital (Signature Pad) */
         .signature-img.signature-digital {
-            max-height: 250px !important; /* Diperbesar dari sebelumnya 80px */
+            max-height: 250px !important;
             max-width: 250px;
             width: auto;
             object-fit: contain;
-            /* Memberikan sedikit filter agar goresan hitam lebih pekat saat diprint */
-            filter: contrast(1.2) brightness(0.9); 
+            filter: contrast(1.2) brightness(0.9);
         }
 
-        /* Style untuk Barcode / QR Code */
         .signature-img.signature-barcode {
-            max-height: 70px !important; /* QR Code tetap ringkas agar tidak dominan */
+            max-height: 70px !important;
             width: auto;
             padding: 5px;
             background: white;
@@ -336,7 +316,6 @@ export class LetterTemplateService {
         .carbon-copy {
             margin-top: 20px;
             font-size: 10pt;
-            /* If it's from editor, it might have p tags with margins */
         }
         .carbon-copy p {
             margin: 0;
@@ -356,11 +335,11 @@ export class LetterTemplateService {
         }
 
         .attachment-page table td {
-          padding: 2px 4px; /* Spasi default, bisa di-override inline */
+          padding: 2px 4px;
           vertical-align: top;
-          border-style: solid; /* Default style to allow border-width to work */
-          border-width: 1px;     /* Default width 0 so borders are hidden unless specified inline */
-          border-color: #000;  /* Default color black so 1px borders are visible */
+          border-style: solid;
+          border-width: 1px;
+          border-color: #000;
         }
     </style>
 </head>
@@ -374,7 +353,7 @@ export class LetterTemplateService {
               letterhead?.logo
                 ? `
                 <div class="header-logo">
-                    <img src="${this.getImagePath(letterhead.logo, baseUrl)}" alt="Logo">
+                    <img src="${getImagePath(letterhead.logo, baseUrl)}" alt="Logo">
                 </div>
                 `
                 : ''
@@ -399,25 +378,20 @@ export class LetterTemplateService {
         <div class="signatures ${gridColumns === 2 ? 'two-column' : ''}">
           ${signatures
             .map((sig: any) => {
-              console.log(sig.isAcknowledged);
-              
               const isBase64 = sig.signature?.startsWith('data:image');
               const signatureSrc = sig.signature
                 ? isBase64
                   ? sig.signature
-                  : this.getImagePath(sig.signature, baseUrl)
+                  : getImagePath(sig.signature, baseUrl)
                 : '';
 
               const sigClass = sig.signatureType === 'digital'
                   ? 'signature-digital'
                   : 'signature-barcode';
 
-              // Logika posisi berdasarkan value yang Anda berikan
-              const positionClass = `sig-${sig.position}`; 
+              const positionClass = `sig-${sig.position}`;
 
-              
-               // Check if any signature in the list has acknowledgment to maintain alignment
-               const hasAcknowledgment = signatures.some((s: any) => s.isAcknowledged);
+              const hasAcknowledgment = signatures.some((s: any) => s.isAcknowledged);
 
                return `
               <div class="signature-block ${positionClass}">
@@ -428,7 +402,7 @@ export class LetterTemplateService {
                         ? '<div class="acknowledgment-text" style="visibility: hidden;">Mengetahui,</div>'
                         : ''
                   }
-                  <div class="official-position">${this.escapeHtml(sig.officialPosition)}</div>
+                  <div class="official-position">${escapeHtml(sig.officialPosition)}</div>
                   <div class="signature-wrapper">
                       ${
                         signatureSrc
@@ -436,8 +410,8 @@ export class LetterTemplateService {
                           : `<div style="height: 70px;"></div>`
                       }
                   </div>
-                  <div class="official-name"><u>${this.escapeHtml(sig.officialName)}</u></div>
-                  ${sig.officialNip ? `<div class="official-nip">NBM: ${this.escapeHtml(sig.officialNip)}</div>` : ''}
+                  <div class="official-name"><u>${escapeHtml(sig.officialName)}</u></div>
+                  ${sig.officialNip ? `<div class="official-nip">NBM: ${escapeHtml(sig.officialNip)}</div>` : ''}
               </div>
             `;
             })
@@ -460,66 +434,70 @@ export class LetterTemplateService {
             .join('')
         : ''
     }
-
-    <div class="print-button no-print">
-        <button onclick="window.print()">Print Surat</button>
-    </div>
 </body>
 </html>
     `;
   }
 
-  private getImagePath(imagePath: string, baseUrl: string): string {
-    if (!imagePath) return '';
+  /**
+   * Get letter data for frontend PDF generation
+   * Returns structured data instead of generating PDF on server
+   */
+  getLetterData(data: LetterPrintData, baseUrl: string) {
+    const {
+      letterNumber,
+      letterContent,
+      letterhead,
+      carbonCopy,
+      attachments,
+      signatures,
+    } = data;
 
-    return `${baseUrl}/${imagePath.replace(/^\//, '')}`;
-  }
+    // Process letter content with placeholders
+    const processedContent = this.replacePlaceholders(letterContent, data);
 
-  private getImageTag(path: string, baseUrl: string, alt: string): string {
-    const imagePath = this.getImagePath(path, baseUrl);
-    return `<img src="${imagePath}" alt="${alt}" />`;
-  }
+    // Process signatures with full image paths
+    const processedSignatures = signatures.map((sig) => {
+      const isBase64 = sig.signature?.startsWith('data:image');
+      const signatureSrc = sig.signature
+        ? isBase64
+          ? sig.signature
+          : getImagePath(sig.signature, baseUrl)
+        : '';
 
-  async generatePdf(data: LetterPrintData, baseUrl: string): Promise<Buffer> {
-    const html = this.generatePrintHtml(data, baseUrl);
-
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      return {
+        ...sig,
+        signature: signatureSrc,
+      };
     });
 
-    try {
-      const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: 'networkidle0' });
+    // Process letterhead with full image path
+    const processedLetterhead = letterhead
+      ? {
+          ...letterhead,
+          logo: letterhead.logo ? getImagePath(letterhead.logo, baseUrl) : '',
+        }
+      : null;
 
-      const pdfBuffer = await page.pdf({
-        format: 'A4',
-        margin: {
-          top: '2cm',
-          right: '2cm',
-          bottom: '2cm',
-          left: '2cm',
-        },
-        printBackground: true,
-      });
-
-      return Buffer.from(pdfBuffer);
-    } finally {
-      await browser.close();
-    }
+    return {
+      letterNumber: letterNumber || 'Surat',
+      letterContent: processedContent,
+      letterhead: processedLetterhead,
+      signatures: processedSignatures,
+      carbonCopy,
+      attachments,
+    };
   }
 
-  private formatHijriDate(date: any): string {
-    if (!date) return '';
-    const d = new Date(date);
-    
-    // Menggunakan Intl.DateTimeFormat dengan kalender islamic-umalqura
-    return new Intl.DateTimeFormat('id-ID-u-ca-islamic-umalqura', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    }).format(d);
-  }
+  /**
+   * Replace placeholders in template content
+   * Supports:
+   * - [attribute_name] from LetterAttributeSubmission
+   * - [student.field] from Student data
+   * - [letter.field] from Letter data
+   */
+
+
 
   /**
    * Replace placeholders in template content
@@ -530,32 +508,32 @@ export class LetterTemplateService {
    */
   private replacePlaceholders(
     content: string,
-    data: LetterPrintData, // Gunakan interface ini agar semua field bisa diakses
+    data: LetterPrintData,
   ): string {
     let processedContent = content;
     const { student, letter, letterAttributes, letterNumber } = data;
 
-    // 1. Mapping Student (Eksis)
+    // 1. Mapping Student
     Object.entries(this.studentMapping).forEach(([placeholder, path]) => {
       const regex = new RegExp(`\\[${placeholder}\\]`, 'g');
-      const value = this.getNestedValue(student, path);
+      const value = getNestedValue(student, path);
       processedContent = processedContent.replace(
         regex,
         value ? String(value) : '',
       );
     });
 
-    // 2. Mapping Letter (Eksis)
+    // 2. Mapping Letter
     Object.entries(this.letterMapping).forEach(([placeholder, path]) => {
       const regex = new RegExp(`\\[${placeholder}\\]`, 'g');
-      const value = this.getNestedValue(letter, path);
+      const value = getNestedValue(letter, path);
       processedContent = processedContent.replace(
         regex,
         value ? String(value) : '',
       );
     });
 
-    // 3. BARU: Mapping Submission (nomor_surat & tanggal_surat)
+    // 3. Mapping Submission (nomor_surat & tanggal_surat)
     Object.entries(this.submissionMapping).forEach(([placeholder, path]) => {
       const regex = new RegExp(`\\[${placeholder}\\]`, 'g');
       let value = '';
@@ -565,15 +543,15 @@ export class LetterTemplateService {
       if (path === 'letterNumber') {
         value = letterNumber || '';
       } else if (path === 'letterDate') {
-        value = this.formatDate(rawDate);
+        value = formatDate(rawDate);
       } else if (path === 'letterDateHijri') {
-        value = this.formatHijriDate(rawDate); // Memanggil fungsi konversi Hijriah
+        value = formatHijriDate(rawDate);
       }
 
       processedContent = processedContent.replace(regex, value);
     });
 
-    // 4. Mapping Atribut Dinamis (Eksis)
+    // 4. Mapping Atribut Dinamis
     letterAttributes?.forEach((attr) => {
       const regex = new RegExp(`\\[${attr.placeholder}\\]`, 'g');
       processedContent = processedContent.replace(regex, attr.content || '');
@@ -582,53 +560,5 @@ export class LetterTemplateService {
     return processedContent;
   }
 
-  /**
-   * Get nested value from object using dot notation
-   * Supports nested paths like "studyProgram.name"
-   */
-  private getNestedValue(obj: any, path: string): any {
-    if (!obj || !path) {
-      return undefined;
-    }
 
-    const keys = path.split('.');
-    let current = obj;
-
-    for (const key of keys) {
-      if (current === null || current === undefined) {
-        return undefined;
-      }
-      current = current[key];
-    }
-
-    return current;
-  }
-
-  private formatDate(date: any): string {
-    if (!date) return '';
-    const d = new Date(date);
-    return d.toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
-  }
-
-  /**
-   * Escape special regex characters
-   */
-  private escapeRegex(str: string): string {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
-
-  private escapeHtml(text: string): string {
-    const map: { [key: string]: string } = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#039;',
-    };
-    return text.replace(/[&<>"']/g, (m) => map[m]);
-  }
 }

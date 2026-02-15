@@ -12,29 +12,17 @@ export class HomeController {
             message: 'Digilet API',
             version: '1.0.0',
             status: 'running',
-            createdBy: 'Yasdil Lasoma'
+            createdBy: 'Yasdil Lasoma',
+            lastUpdated: '13 Februari 2026 17:13 WITA'
         };
     }
 
     @Public()
     @Get('testimoni')
     async testimoni() {
-        // Ambil data announcement yang aktif (status = true)
         const announcements = await this.prismaService.announcement.findMany({
             where: {
                 status: true,
-            },
-            include: {
-                user: {
-                    select: {
-                        name: true,
-                    },
-                },
-                institution: {
-                    select: {
-                        name: true,
-                    },
-                },
             },
             orderBy: {
                 createdAt: 'desc',

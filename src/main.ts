@@ -20,7 +20,7 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://172.16.0.221:3000','https://digilet-fai.umgo.ac.id','https://digilet-fai.umgo.ac.id/'],
+    origin: ['http://localhost:5173','http://localhost:4173', 'http://172.16.0.221:3000','https://digilet-fai.umgo.ac.id','https://digilet-fai.umgo.ac.id/'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
     allowedHeaders: 'Content-Type, Accept, Authorization, Access-Control-Allow-Private-Network',

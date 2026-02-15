@@ -607,10 +607,10 @@ export class StudentLetterSubmissionService {
     );
   }
 
-  async printLetterPdf(
+  async getLetterData(
     token: string,
     baseUrl: string = 'http://localhost:3000',
-  ): Promise<Buffer> {
+  ) {
     const submission =
       await this.prismaService.studentLetterSubmission.findUnique({
         where: { token },
@@ -672,6 +672,7 @@ export class StudentLetterSubmissionService {
       officialNip: sig.uniqueCode || '',
       position: sig.position || 'right',
       isAcknowledged: sig.isAcknowledged,
+      signatureType: submission.signatureType,
     }));
 
     // Prepare letter attributes data for placeholder replacement
@@ -683,16 +684,16 @@ export class StudentLetterSubmissionService {
     );
 
     const carbonCopy = submission.carbonCopy || '';
-    
+
     // Prepare attachments
     const attachments = submission.letterAttachments
       ? submission.letterAttachments
-          .filter(att => att.isVisible)
-          .map(att => att.content)
+          .filter((att) => att.isVisible)
+          .map((att) => att.content)
       : [];
 
-    // Generate PDF using template service
-    return this.letterTemplateService.generatePdf(
+    // Get letter data using template service
+    return this.letterTemplateService.getLetterData(
       {
         letterNumber: submission.letterNumber || undefined,
         recipientName: submission.student.fullname,

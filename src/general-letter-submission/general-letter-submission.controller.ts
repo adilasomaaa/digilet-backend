@@ -73,25 +73,23 @@ export class GeneralLetterSubmissionController {
     return res.send(html);
   }
 
-  @Get('print-pdf/:token')
+
+
+  @Get('letter-data/:token')
   @Public()
-  async printPdf(
+  async getLetterData(
     @Param('token') token: string,
     @Req() req: Request,
-    @Res() res: Response,
   ) {
     const baseUrl = `${req.protocol}://${req.get('host')}`;
-    const pdfBuffer = await this.generalLetterSubmissionService.printLetterPdf(
+    const data = await this.generalLetterSubmissionService.getLetterData(
       token,
       baseUrl,
     );
-
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader(
-      'Content-Disposition',
-      `inline; filename="surat-${token}.pdf"`,
+    return ApiResponse.successWithData(
+      'Letter data berhasil diambil',
+      data,
     );
-    return res.send(pdfBuffer);
   }
 
   @Get(':id')

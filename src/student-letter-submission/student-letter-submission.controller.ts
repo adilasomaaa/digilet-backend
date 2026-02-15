@@ -172,22 +172,23 @@ export class StudentLetterSubmissionController {
     return res.send(html);
   }
 
-  @Get('print-pdf/:token')
+
+
+  @Get('letter-data/:token')
   @Public()
-  async printPdf(
+  async getLetterData(
     @Param('token') token: string,
     @Req() req: Request,
-    @Res() res: Response,
   ) {
     const baseUrl = `${req.protocol}://${req.get('host')}`;
-    const pdfBuffer = await this.studentLetterSubmissionService.printLetterPdf(
+    const data = await this.studentLetterSubmissionService.getLetterData(
       token,
       baseUrl,
     );
-
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename="surat-${token}.pdf"`);
-    return res.send(pdfBuffer);
+    return ApiResponse.successWithData(
+      'Letter data berhasil diambil',
+      data,
+    );
   }
 
   @Get(':id')

@@ -76,7 +76,6 @@ export class FileUploadService {
   ): MulterOptions {
     return {
       fileFilter: (req, file, cb) => {
-        // Convert file types to mime types
         const allowedMimeTypes = allowedFileTypes
           .map((type) => {
             switch (type.toLowerCase()) {

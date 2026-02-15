@@ -365,8 +365,31 @@ export class StudentService {
     });
   }
 
-  async exportToExcel() {
+  async exportToExcel(user: any) {
+    const where: Prisma.StudentWhereInput = {};
+
+    // Apply hierarchical institution filtering for personnel
+    if (user?.personnel) {
+      const personnel = await this.prismaService.personnel.findUnique({
+        where: { id: user.personnel.id },
+        include: { institution: true },
+      });
+
+      if (personnel?.institution) {
+        const accessibleIds = await getAccessibleInstitutionIds(
+          this.prismaService,
+          personnel.institutionId!,
+          personnel.institution.type,
+        );
+
+        if (accessibleIds !== null) {
+          where.institutionId = { in: accessibleIds };
+        }
+      }
+    }
+
     const students = await this.prismaService.student.findMany({
+      where,
       include: { institution: true, user: true },
     });
 

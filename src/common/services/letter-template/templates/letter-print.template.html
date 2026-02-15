@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surat - {{LETTER_NUMBER}}</title>
+    <style>
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            .no-print {
+                display: none;
+            }
+        }
+
+        .header-wrapper {
+            display: flex;
+            align-items: center;
+            border-bottom: 4px double #000;
+            padding-bottom: 10px;
+        }
+
+        .header-logo {
+            flex: 0 0 80px;
+            margin-right: 15px;
+        }
+
+        .header-logo img {
+            max-width: 80px;
+            max-height: 100px;
+            object-fit: contain;
+        }
+
+        .header-text {
+            flex: 1;
+            text-align: center;
+            line-height: 1.2;
+            margin-right: 80px;
+        }
+
+        .header-univ {
+            font-size: 12pt;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .header-fai {
+            font-size: 14pt;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .header-address {
+            font-size: 9pt;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Times New Roman', serif;
+            font-size: 12pt;
+            line-height: 1.6;
+            margin: 0;
+            color: #000;
+        }
+
+        .letter-container {
+            max-width: 21cm;
+            margin: 0 auto;
+            background: white;
+            box-sizing: border-box;
+            position: relative;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .letterhead {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #000;
+            padding-bottom: 15px;
+        }
+
+        .letterhead img {
+            max-width: 100px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+
+        .letterhead h1 {
+            font-size: 16pt;
+            font-weight: bold;
+            margin: 5px 0;
+            text-transform: uppercase;
+        }
+
+        .letterhead h2 {
+            font-size: 14pt;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .letterhead p {
+            font-size: 11pt;
+            margin: 1px 0;
+        }
+
+        .letter-info {
+            margin-bottom: 20px;
+        }
+
+        .letter-info p {
+            margin: 0px 0;
+        }
+
+        .letter-content {
+            text-align: justify;
+            margin-bottom: 5px;
+            min-height: 200px;
+        }
+
+        .letter-content p {
+            margin-top: 0 !important;
+            margin-bottom: 2px !important;
+            line-height: 1.5 !important;
+            text-indent: 35px;
+        }
+
+        .letter-content figure.table {
+            margin: 10px 0 !important;
+            width: 100% !important;
+        }
+
+        .letter-content figure.table p {
+            margin: 0 !important;
+            text-indent: 0 !important;
+        }
+
+        .letter-content table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .letter-content table td {
+            padding: 2px 4px;
+            vertical-align: top;
+            border-style: solid;
+            border-width: 1px;
+            border-color: #000;
+        }
+
+        .letter-content table td,
+        .letter-content strong {
+            margin: 0;
+        }
+
+        .signatures {
+            display: grid;
+            gap: 5px;
+        }
+
+        .signatures.two-column {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: auto auto;
+        }
+
+        .signatures.three-column {
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: auto auto;
+        }
+
+        .sig-kiri-atas {
+            grid-column: 1;
+            grid-row: 1;
+        }
+
+        .sig-tengah-atas {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        .sig-kanan-atas {
+            grid-column: 3;
+            grid-row: 1;
+        }
+
+        .sig-kiri-bawah {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .sig-tengah-bawah {
+            grid-column: 2;
+            grid-row: 2;
+        }
+
+        .sig-kanan-bawah {
+            grid-column: 3;
+            grid-row: 2;
+        }
+
+        .signatures.two-column .sig-kanan-atas {
+            grid-column: 2 !important;
+        }
+
+        .signatures.two-column .sig-kanan-bawah {
+            grid-column: 2 !important;
+        }
+
+        .signature-block {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .acknowledgment-text {
+            font-weight: bold;
+        }
+
+        .signature-block .signature-image {
+            max-width: 150px;
+            max-height: 75px;
+            border: 1px solid #000;
+        }
+
+        .signature-block .official-name {
+            font-weight: bold;
+            font-size: 12pt;
+            padding-top: 5px;
+            display: inline-block;
+            min-width: 150px;
+        }
+
+        .signature-block .official-position {
+            font-weight: bold;
+        }
+
+        .signature-block .official-nip {
+            font-size: 10pt;
+        }
+
+        .signature-wrapper {
+            height: 65px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .signature-img.signature-digital {
+            max-height: 250px !important;
+            max-width: 250px;
+            width: auto;
+            object-fit: contain;
+            filter: contrast(1.2) brightness(0.9);
+        }
+
+        .signature-img.signature-barcode {
+            max-height: 70px !important;
+            width: auto;
+            padding: 5px;
+            background: white;
+        }
+
+        .carbon-copy {
+            margin-top: 20px;
+            font-size: 10pt;
+        }
+
+        .carbon-copy p {
+            margin: 0;
+        }
+
+        .attachment-page {
+            page-break-before: always;
+        }
+
+        .attachment-page img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .attachment-page table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .attachment-page table td {
+            padding: 2px 4px;
+            vertical-align: top;
+            border-style: solid;
+            border-width: 1px;
+            border-color: #000;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="letter-container">
+        {{LETTERHEAD}}
+
+        <div class="letter-content">
+            {{LETTER_CONTENT}}
+        </div>
+
+        <div class="signatures {{SIGNATURE_GRID_CLASS}}">
+            {{SIGNATURES}}
+        </div>
+
+        {{CARBON_COPY}}
+    </div>
+
+    {{ATTACHMENTS}}
+</body>
+
+</html>

@@ -80,8 +80,8 @@ export class StudentController {
   @Get('export/excel')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
-  async export(@Res() res: express.Response) {
-    const buffer: any = await this.studentService.exportToExcel();
+  async export(@Res() res: express.Response, @Req() req: any) {
+    const buffer: any = await this.studentService.exportToExcel(req.user);
 
     res.set({
       'Content-Type':

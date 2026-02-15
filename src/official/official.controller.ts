@@ -9,14 +9,21 @@ import {
   UseGuards,
   Query,
   Req,
+  Res,
+  UseInterceptors,
+  UploadedFile,
+  ParseIntPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { OfficialService } from './official.service';
 import { CreateOfficialDto } from './dto/create-official.dto';
 import { UpdateOfficialDto } from './dto/update-official.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { ApiResponse } from '../common/helpers/api-response.helper';
 import { QueryOfficialDto } from './dto/query-official.dto';
+import * as express from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('api/official')
 export class OfficialController {
@@ -65,4 +72,53 @@ export class OfficialController {
     await this.officialService.remove(+id);
     return ApiResponse.success('Official berhasil dihapus');
   }
+
+  @Get('export/excel')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('JWT-auth')
+  async export(@Res() res: express.Response, @Req() req: any) {
+    const buffer: any = await this.officialService.exportToExcel(req.user);
+
+    res.set({
+      'Content-Type':
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': 'attachment; filename="data-dosen.xlsx"',
+      'Content-Length': buffer.length,
+    });
+
+    return res.send(buffer);
+  }
+
+  @Post('import')
+  @UseGuards(AuthGuard('jwt'))
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiBearerAuth('JWT-auth')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  async import(
+    @UploadedFile() file: Express.Multer.File,
+    @Query('institutionId', ParseIntPipe) institutionId: number,
+  ) {
+    if (!file) throw new BadRequestException('File excel harus diunggah');
+    if (!institutionId) new BadRequestException('Program studi harus dipilih.');
+
+    const result = await this.officialService.importFromExcel(
+      file.buffer,
+      institutionId,
+    );
+    return ApiResponse.successWithData(
+      `${result.total} Data pegawai berhasil diimpor`,
+        result,
+      );
+    }
 }

@@ -23,8 +23,22 @@ export class GeneralLetterSubmissionService {
   async create(createDto: CreateGeneralLetterSubmissionDto, user: any) {
     const { letterId, letterDate, attributes, ...rest } = createDto;
     const userId = user.id;
-    const institutionId = user.personnel.institutionId;
+    
     const token = randomUUID();
+
+    if(user.roles.name == 'admin'){
+      throw new BadRequestException(
+        'Admin tidak dapat membuat surat.',
+      );
+    }
+
+    if(!user?.personnel){
+      throw new BadRequestException(
+        'User ini tidak terasosiasi dengan institusi manapun.',
+      );
+    }
+
+    const institutionId = user.personnel.institutionId;
 
     const requiredAttributes =
       await this.prismaService.letterAttribute.findMany({
@@ -329,10 +343,10 @@ export class GeneralLetterSubmissionService {
     );
   }
 
-  async printLetterPdf(
+  async getLetterData(
     token: string,
     baseUrl: string = 'http://localhost:3000',
-  ): Promise<Buffer> {
+  ) {
     const submission =
       await this.prismaService.generalLetterSubmission.findUnique({
         where: { token },
@@ -382,6 +396,7 @@ export class GeneralLetterSubmissionService {
       officialNip: sig.uniqueCode || '',
       position: sig.position || 'right',
       isAcknowledged: sig.isAcknowledged,
+      signatureType: submission.signatureType,
     }));
 
     const letterAttributes = submission.letterAttributeSubmissions.map(
@@ -395,11 +410,11 @@ export class GeneralLetterSubmissionService {
 
     const attachments = submission.letterAttachments
       ? submission.letterAttachments
-          .filter(att => att.isVisible)
-          .map(att => att.content)
+          .filter((att) => att.isVisible)
+          .map((att) => att.content)
       : [];
 
-    return this.letterTemplateService.generatePdf(
+    return this.letterTemplateService.getLetterData(
       {
         letterNumber: submission.letterNumber || undefined,
         recipientName: submission.user.name,
