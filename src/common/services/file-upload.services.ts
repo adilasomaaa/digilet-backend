@@ -26,7 +26,7 @@ export class FileUploadService {
     });
   }
 
-  public getImageUploadOptions(path: string): MulterOptions {
+  public getImageUploadOptions(path: string, limit?: number): MulterOptions {
     return {
       fileFilter: (req, file, cb) => {
         if (file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
@@ -43,12 +43,12 @@ export class FileUploadService {
       storage: this.getStorage(path),
 
       limits: {
-        fileSize: 5 * 1024 * 1024, // 5MB
+        fileSize: limit ? limit * 1024 * 1024 : 5 * 1024 * 1024, // 5MB
       },
     };
   }
 
-  public getPdfUploadOptions(path: string): MulterOptions {
+  public getPdfUploadOptions(path: string, limit?: number): MulterOptions {
     return {
       fileFilter: (req, file, cb) => {
         if (file.mimetype === 'application/pdf') {
@@ -65,7 +65,7 @@ export class FileUploadService {
       storage: this.getStorage(path),
 
       limits: {
-        fileSize: 10 * 1024 * 1024,
+        fileSize: limit ? limit * 1024 * 1024 : 10 * 1024 * 1024,
       },
     };
   }
@@ -73,6 +73,7 @@ export class FileUploadService {
   public getDynamicFileUploadOptions(
     path: string,
     allowedFileTypes: string[],
+    limit?: number,
   ): MulterOptions {
     return {
       fileFilter: (req, file, cb) => {
@@ -118,7 +119,7 @@ export class FileUploadService {
       storage: this.getStorage(path),
 
       limits: {
-        fileSize: 10 * 1024 * 1024, // 10MB default
+        fileSize: limit ? limit * 1024 * 1024 : 10 * 1024 * 1024, // 10MB default
       },
     };
   }

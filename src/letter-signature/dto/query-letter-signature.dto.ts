@@ -12,4 +12,11 @@ export class QueryLetterSignatureDto extends PaginationQueryDto {
     @Type(() => Number)
     @IsInt()
     generalLetterSubmissionId?: number;
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    officialId?: number;
+
+
 }

@@ -24,8 +24,8 @@ export class LetterSignatureService {
     });
   }
 
-  async findAll(query: QueryLetterSignatureDto) {
-    const { page, limit, search, studentLetterSubmissionId, generalLetterSubmissionId } = query;
+  async findAll(query: QueryLetterSignatureDto, user: any) {
+    const { page, limit, search, studentLetterSubmissionId, generalLetterSubmissionId, officialId } = query;
 
     const where: Prisma.LetterSignatureWhereInput = {};
 
@@ -41,6 +41,9 @@ export class LetterSignatureService {
       where.generalLetterSubmissionId = generalLetterSubmissionId;
     }
 
+    if (user.roles.name == 'lecturer') {
+      where.officialId = officialId;
+    }
 
     const [data, total] = await this.prismaService.$transaction([
       this.prismaService.letterSignature.findMany({

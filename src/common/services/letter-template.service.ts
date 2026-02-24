@@ -6,6 +6,7 @@ import {
   escapeHtml,
   getNestedValue,
   getImagePath,
+  imageFileToBase64,
 } from './letter-template/utils';
 
 interface LetterAttributeData {
@@ -456,26 +457,20 @@ export class LetterTemplateService {
     // Process letter content with placeholders
     const processedContent = this.replacePlaceholders(letterContent, data);
 
-    // Process signatures with full image paths
+    // Process signatures — convert to Base64 so html2canvas works cross-origin
     const processedSignatures = signatures.map((sig) => {
-      const isBase64 = sig.signature?.startsWith('data:image');
-      const signatureSrc = sig.signature
-        ? isBase64
-          ? sig.signature
-          : getImagePath(sig.signature, baseUrl)
-        : '';
-
+      const signatureSrc = imageFileToBase64(sig.signature);
       return {
         ...sig,
         signature: signatureSrc,
       };
     });
 
-    // Process letterhead with full image path
+    // Process letterhead logo — convert to Base64 for cross-origin PDF support
     const processedLetterhead = letterhead
       ? {
           ...letterhead,
-          logo: letterhead.logo ? getImagePath(letterhead.logo, baseUrl) : '',
+          logo: imageFileToBase64(letterhead.logo),
         }
       : null;
 

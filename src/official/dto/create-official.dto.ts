@@ -7,6 +7,10 @@ export class CreateOfficialDto {
   @IsString()
   name: string;
 
+  @ApiProperty({ example: 'admin@example.com', description: 'email' })
+  @IsNotEmpty({ message: 'Email tidak boleh kosong' })
+  email: string;
+
   @ApiProperty({ example: '123456789', description: 'Nomor identitas' })
   @IsNotEmpty({ message: 'Nomor identitas tidak boleh kosong' })
   @IsString()

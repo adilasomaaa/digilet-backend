@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Query,
+  Req,
 } from '@nestjs/common';
 import { LetterSignatureService } from './letter-signature.service';
 import { CreateLetterSignatureDto } from './dto/create-letter-signature.dto';
@@ -34,8 +35,8 @@ export class LetterSignatureController {
   @Get()
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
-  async findAll(@Query() query: QueryLetterSignatureDto) {
-    const result = await this.letterSignatureService.findAll(query);
+  async findAll(@Query() query: QueryLetterSignatureDto, @Req() req: any) {
+    const result = await this.letterSignatureService.findAll(query, req.user);
     return ApiResponse.successWithPaginate(
       'Letter signature berhasil diambil',
       result.data,

@@ -93,6 +93,11 @@ export class AuthService {
             institution: true,
           },
         },
+        official: {
+          include: {
+            institution: true,
+          }
+        }
       },
     });
 
@@ -169,7 +174,7 @@ export class AuthService {
   }
 
   async updateProfile(id: number, updateProfileDto: UpdateProfileDto): Promise<any> {
-    const { name, email, occupation } = updateProfileDto;
+    const { name, email, occupation, birthday, gender, birthplace, address, classYear, phoneNumber } = updateProfileDto;
 
     // 1. Update User (Name & Email)
     const updatedUser = await this.prisma.user.update({
@@ -179,7 +184,9 @@ export class AuthService {
         email,
       },
       include: {
-        personnel: true, // Check if user is personnel
+        personnel: true,
+        student: true,
+        official: true,
       },
     });
 
@@ -189,6 +196,21 @@ export class AuthService {
         where: { userId: id },
         data: {
           position: occupation,
+        },
+      });
+    }
+
+    if(updatedUser.student && (birthday || gender || birthplace || address || classYear || phoneNumber)) {
+      const birthdayDate = birthday ? new Date(birthday) : undefined;
+      await this.prisma.student.update({
+        where: { userId: id },
+        data: {
+          birthday: birthdayDate,
+          gender,
+          birthplace,
+          address,
+          classYear,
+          phoneNumber,
         },
       });
     }

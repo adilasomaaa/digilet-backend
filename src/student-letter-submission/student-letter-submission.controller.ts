@@ -56,6 +56,7 @@ export class StudentLetterSubmissionController {
           'xlsx',
           'txt',
         ],
+        3 // 3 mb
       ),
     ),
   )

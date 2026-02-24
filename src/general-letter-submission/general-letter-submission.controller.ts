@@ -74,7 +74,6 @@ export class GeneralLetterSubmissionController {
   }
 
 
-
   @Get('letter-data/:token')
   @Public()
   async getLetterData(

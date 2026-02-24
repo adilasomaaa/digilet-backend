@@ -25,6 +25,10 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { AnnouncementModule } from './announcement/announcement.module';
 import { NodesModule } from './nodes/nodes.module';
 import { HomeModule } from './home/home.module';
+import { ReportingPeriodeModule } from './reporting-periode/reporting-periode.module';
+import { ReportingStageModule } from './reporting-stage/reporting-stage.module';
+import { LecturerReportModule } from './lecturer-report/lecturer-report.module';
+import { StudentReportModule } from './student-report/student-report.module';
 
 @Module({
   imports: [
@@ -53,6 +57,10 @@ import { HomeModule } from './home/home.module';
     DashboardModule,
     AnnouncementModule,
     NodesModule,
+    ReportingPeriodeModule,
+    ReportingStageModule,
+    StudentReportModule,
+    LecturerReportModule
   ],
   providers: [
     FileUploadService,

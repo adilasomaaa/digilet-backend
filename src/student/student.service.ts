@@ -168,8 +168,6 @@ export class StudentService {
           personnel.institution.type,
         );
 
-        // If accessibleIds is null, it means access to all institutions
-        // Otherwise, filter by accessible institution IDs
         if (accessibleIds !== null) {
           where.institutionId = { in: accessibleIds };
         }
@@ -447,74 +445,103 @@ export class StudentService {
         'File excel kosong atau hanya berisi header',
       );
     }
+    let createdStudentsCount = 0;
 
-    return await this.prismaService.$transaction(async (tx) => {
-      let createdStudentsCount = 0;
+    const getVal = (value: any): string => {
+      if (!value) return '';
 
-      for (let i = 2; i <= worksheet.rowCount; i++) {
-        const row = worksheet.getRow(i);
-        const nim = row.getCell(2).value?.toString();
-        const email = row.getCell(9).value?.toString();
+      // kalau richText
+      if (value.richText) {
+        return value.richText.map((rt: any) => rt.text).join('');
+      }
 
-        if (!nim) continue;
+      return String(value);
+    };
 
-        if (!email) {
-          throw new BadRequestException(
-            `Baris ${i}: Mahasiswa dengan NIM ${nim} wajib memiliki email karena akun User diperlukan.`,
-          );
-        }
+    for (let i = 2; i <= worksheet.rowCount; i++) {
+      const row = worksheet.getRow(i);
+      
+      const fullname = getVal(row.getCell(1)).toUpperCase();
+      const nim = getVal(row.getCell(2));
+      const classYear = getVal(row.getCell(3));
+      const address = getVal(row.getCell(4));
+      const phoneNumber = getVal(row.getCell(5));
+      const rawBirthday = row.getCell(6).value;
+      const birthplace = getVal(row.getCell(7));
+      const gender = getVal(row.getCell(8));
+      const emailExcel = getVal(row.getCell(9));
 
-        await tx.student.upsert({
-          where: { nim: nim },
-          update: {
-            fullname: row.getCell(1).value?.toString() || '',
-            classYear: row.getCell(3).value?.toString() || '',
-            address: row.getCell(4).value?.toString() || '',
-            phoneNumber: row.getCell(5).value?.toString(),
-            birthday: row.getCell(6).value
-              ? new Date(row.getCell(6).value?.toString() || '')
-              : null,
-            birthplace: row.getCell(7).value?.toString(),
-            gender: row.getCell(8).value?.toString() || 'Not Specified',
-            institution: { connect: { id: institutionId } },
-          },
-          create: {
-            fullname: row.getCell(1).value?.toString() || '',
-            nim: nim,
-            classYear: row.getCell(3).value?.toString() || '',
-            address: row.getCell(4).value?.toString() || '',
-            phoneNumber: row.getCell(5).value?.toString(),
-            birthday: row.getCell(6).value
-              ? new Date(row.getCell(6).value?.toString() || '')
-              : null,
-            birthplace: row.getCell(7).value?.toString(),
-            gender: row.getCell(8).value?.toString() || 'Not Specified',
-            institution: { connect: { id: institutionId } },
-            user: {
-              connectOrCreate: {
-                where: { email: email },
-                create: {
-                  email: nim,
-                  name: row.getCell(1).value?.toString() || '',
-                  password: await this.hashPassword(nim),
-                  userRoles: {
-                    create: {
-                      role: { connect: { name: 'student' } },
+      if (!nim) continue;
+
+      if (!emailExcel) {
+        throw new BadRequestException(
+          `Baris ${i}: Mahasiswa dengan NIM ${nim} wajib memiliki email karena akun User diperlukan.`,
+        );
+      }
+      
+      try{
+        await this.prismaService.$transaction(async (tx) => {
+          const hashedPassword = await this.hashPassword(nim);
+          let birthdayDate: Date | null = null;
+          if (rawBirthday instanceof Date) {
+            birthdayDate = rawBirthday;
+          } else if (typeof rawBirthday === 'string' && rawBirthday !== '-') {
+            const parsed = new Date(rawBirthday);
+            if (!isNaN(parsed.getTime())) birthdayDate = parsed;
+          }
+          await tx.student.upsert({
+            where: { nim: nim },
+            update: {
+              fullname,
+              classYear,
+              address,
+              phoneNumber,
+              birthday: birthdayDate,
+              birthplace,
+              gender,
+            },
+            create: {
+              fullname,
+              nim,
+              classYear,
+              address,
+              phoneNumber,
+              birthday: birthdayDate,
+              birthplace,
+              gender,
+              institution: { connect: { id: Number(institutionId) } },
+              user: {
+                connectOrCreate: {
+                  where: { email: emailExcel },
+                  create: {
+                    email: emailExcel,
+                    name: fullname,
+                    password: hashedPassword,
+                    userRoles: {
+                      create: {
+                        role: { connect: { name: 'student' } },
+                      },
                     },
                   },
                 },
               },
             },
-          },
-        });
+          });
 
-        createdStudentsCount++;
+          createdStudentsCount++;
+          console.log("Mahasiswa berhasil diimpor ", fullname)
+        })
+      }catch(error){
+        console.log("Gagal import:", row, error.message);
+        throw new BadRequestException(
+          `Baris ${i}: Mahasiswa dengan NIM ${nim} gagal diimpor. Error: ${error.message}`,
+        );
       }
+    }
 
       return {
         message: 'Import berhasil diselesaikan',
         total: createdStudentsCount,
       };
-    });
   }
 }

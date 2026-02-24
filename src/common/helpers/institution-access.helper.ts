@@ -18,12 +18,12 @@ export async function getAccessibleInstitutionIds(
       return [institutionId];
 
     case InstitutionType.faculty:
-      // Faculty personnel can access all child study programs
+      // Faculty personnel can access their own institution + all child study programs
       const childInstitutions = await prisma.institution.findMany({
         where: { parentId: institutionId },
         select: { id: true },
       });
-      return childInstitutions.map((inst) => inst.id);
+      return [institutionId, ...childInstitutions.map((inst) => inst.id)];
 
     case InstitutionType.institution:
     case InstitutionType.university:

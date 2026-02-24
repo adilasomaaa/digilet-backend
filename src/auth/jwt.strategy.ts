@@ -49,6 +49,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
             institution: true,
           },
         },
+        official: {
+          include: {
+            institution: true
+          }
+        }
       },
     });
 

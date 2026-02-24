@@ -6,6 +6,7 @@ import { QueryAnnouncementDto } from './dto/query-announcement.dto';
 import { Prisma, User } from '@prisma/client';
 import * as fs from 'fs';
 import { join } from 'path';
+import { getAccessibleInstitutionIds } from 'src/common/helpers/institution-access.helper';
 
 
 @Injectable()
@@ -34,7 +35,22 @@ export class AnnouncementService {
     const where: Prisma.AnnouncementWhereInput = {};
 
     if (user.roles.name === 'personnel') {
-      where.institutionId = user.personnel.institutionId;
+      const personnel = await this.prismaService.personnel.findUnique({
+        where: { id: user.personnel.id },
+        include: { institution: true },
+      });
+
+      if (personnel?.institution) {
+        const accessibleIds = await getAccessibleInstitutionIds(
+          this.prismaService,
+          personnel.institutionId!,
+          personnel.institution.type,
+        );
+
+        if (accessibleIds !== null) {
+          where.institutionId = { in: accessibleIds };
+        }
+      }
     }
 
     if(user.roles.name === 'student') {

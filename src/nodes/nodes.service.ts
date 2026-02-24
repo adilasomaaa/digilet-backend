@@ -9,9 +9,10 @@ import { CreateFolderDto } from './dto/create-folder.dto';
 import { CreateLinkDto } from './dto/create-link.dto';
 import { RenameNodeDto } from './dto/rename-node.dto';
 import { QueryNodesDto } from './dto/query-nodes.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, InstitutionType } from '@prisma/client';
 import * as fs from 'fs';
 import { join } from 'path';
+import { getAccessibleInstitutionIds } from '../common/helpers/institution-access.helper';
 
 @Injectable()
 export class NodesService {
@@ -23,21 +24,51 @@ export class NodesService {
     // Get user's institutionId from personnel relation
     const user = await this.prismaService.user.findUnique({
       where: { id: userId },
-      include: { personnel: true },
+      include: { 
+        personnel: {
+          include: {
+            institution: true
+          }
+        } 
+      },
     });
 
     const institutionId = user?.personnel?.institutionId;
+    const institutionType = user?.personnel?.institution?.type;
 
-    // Build where clause based on institution
-    const ownerFilter = institutionId
-      ? {
-          owner: {
-            personnel: {
-              institutionId: institutionId,
-            },
-          },
-        }
-      : { ownerId: userId }; // No institution - only own files
+    let ownerFilter: any = { ownerId: userId };
+
+    if (institutionId && institutionType) {
+      const accessibleIds = await getAccessibleInstitutionIds(
+        this.prismaService,
+        institutionId,
+        institutionType as InstitutionType,
+      );
+
+      if (accessibleIds === null) {
+         // Access to all institutions (University/Institution level)
+         // For now, let's assume they can see everything, or we can restrict if needed.
+         // If we strictly follow the pattern "nodes belong to owner", we check for owner filtering.
+         // If accessibleIds is null, we might not want to restrict by institution at all?
+         // OR we just default to "My Institution" nodes?
+         // The helper comment says "null indicates all institutions".
+         // Let's allow all.
+         ownerFilter = {}; 
+      } else {
+         // accessibleIds contains child institutions (for faculty) or just own (for prodi).
+         // We must also ensure the user's OWN institution is in the list for Faculty (as helper might only return children).
+         // let's check the helper implementation again -> Faculty returns children.id.
+         // So we explicitly add institutionId.
+         const allIds = new Set([...accessibleIds, institutionId]);
+         ownerFilter = {
+           owner: {
+             personnel: {
+               institutionId: { in: Array.from(allIds) },
+             },
+           },
+         };
+      }
+    }
 
     const where: Prisma.NodesWhereInput = {
       ...ownerFilter,
@@ -144,18 +175,41 @@ export class NodesService {
     // Get current user's institutionId
     const user = await this.prismaService.user.findUnique({
       where: { id: userId },
-      include: { personnel: true },
+      include: { 
+        personnel: {
+          include: {
+            institution: true
+          }
+        } 
+      },
     });
 
     const userInstitutionId = user?.personnel?.institutionId;
+    const institutionType = user?.personnel?.institution?.type;
     const nodeOwnerInstitutionId = node.owner.personnel?.institutionId;
 
-    // Check access: either owner, or same institution
-    const hasAccess =
-      node.ownerId === userId ||
-      (userInstitutionId &&
-        nodeOwnerInstitutionId &&
-        userInstitutionId === nodeOwnerInstitutionId);
+    let hasAccess = false;
+    
+    if (node.ownerId === userId) {
+        hasAccess = true;
+    } else if (userInstitutionId && institutionType) {
+        const accessibleIds = await getAccessibleInstitutionIds(
+            this.prismaService,
+            userInstitutionId,
+            institutionType as InstitutionType
+        );
+
+        if (accessibleIds === null) {
+            // Can access all
+            hasAccess = true;
+        } else {
+             // Check if node owner's institution is in allowed list (or is own institution)
+             const allIds = new Set([...accessibleIds, userInstitutionId]);
+             if (nodeOwnerInstitutionId && allIds.has(nodeOwnerInstitutionId)) {
+                 hasAccess = true;
+             }
+        }
+    }
 
     if (!hasAccess) {
       throw new ForbiddenException('Anda tidak memiliki akses ke node ini');
@@ -166,13 +220,9 @@ export class NodesService {
 
   async getBreadcrumbs(nodeId: number, userId: number) {
     const breadcrumbs: { id: number; name: string }[] = [];
-    let currentNode = await this.prismaService.nodes.findUnique({
-      where: { id: nodeId },
-    });
-
-    if (!currentNode || currentNode.ownerId !== userId) {
-      throw new NotFoundException('Node tidak ditemukan');
-    }
+    
+    // Use findOne to check access permissions (same logic as viewing a node)
+    let currentNode: any = await this.findOne(nodeId, userId);
 
     while (currentNode) {
       breadcrumbs.unshift({
