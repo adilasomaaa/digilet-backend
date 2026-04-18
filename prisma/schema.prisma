@@ -1,0 +1,521 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum LetterCategory {
+  faculty
+  study_program
+  university
+  all
+}
+
+enum SignatureType {
+  digital
+  barcode
+}
+
+enum ReportTargetUser {
+  student
+  lecturer
+}
+
+enum StudentLetterStatus {
+  pending
+  waiting_signature
+  approved
+  rejected
+}
+
+enum InstitutionType {
+  university
+  faculty
+  study_program
+  institution
+}
+
+enum LetterStatus {
+  public
+  private
+}
+
+enum AnnouncementVisibleStatus {
+  public
+  student
+}
+
+enum ReportScopes {
+  faculty
+  study_program
+}
+
+enum NodeTypes {
+  link
+  folder
+  image
+  pdf
+}
+
+enum ActivityTarget {
+  student
+  lecturer
+}
+
+enum CategoryActivity {
+  faculty
+  study_program
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  personnel                Personnel?
+  student                  Student?
+  userRoles                UserRoles[]
+  activeTokens             ActiveToken[]
+  generalLetterSubmissions GeneralLetterSubmission[]
+  letters                  Letter[]
+  letterHeads              LetterHead[]
+  nodes                    Nodes[]
+  announcements            Announcement[]
+  reportingPeriodes        ReportingPeriodes[]
+  official                 Official?
+  activities               Activity[]
+  activityParticipants     ActivityParticipant[]
+}
+
+model Institution {
+  id       Int             @id @default(autoincrement())
+  name     String          @unique
+  address  String?
+  type     InstitutionType
+  parentId Int?
+  parent   Institution?    @relation("InstitutionHierarchy", fields: [parentId], references: [id])
+  children Institution[]   @relation("InstitutionHierarchy")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  personnels               Personnel[]
+  officials                Official[]
+  students                 Student[]
+  letterHeads              LetterHead[]
+  letters                  Letter[]
+  generalLetterSubmissions GeneralLetterSubmission[]
+  announcements            Announcement[]
+  reportingPeriodes        ReportingPeriodes[]
+  activities               Activity[]
+}
+
+model Personnel {
+  id            Int          @id @default(autoincrement())
+  name          String
+  position      String
+  institution   Institution? @relation(fields: [institutionId], references: [id])
+  institutionId Int?
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int          @unique
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Official {
+  id               Int               @id @default(autoincrement())
+  name             String
+  occupation       String
+  nip              String            @unique
+  institution      Institution?      @relation(fields: [institutionId], references: [id])
+  institutionId    Int?
+  user             User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           Int?              @unique
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  letterSignatures LetterSignature[]
+  studentReports   StudentReport[]
+  sentReports      LecturerReport[]  @relation("SentReports")
+  validatedReports LecturerReport[]  @relation("ValidatedReports")
+}
+
+model Student {
+  id                       Int                       @id @default(autoincrement())
+  user                     User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                   Int                       @unique
+  institution              Institution               @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  institutionId            Int
+  fullname                 String
+  nim                      String                    @unique
+  classYear                String
+  address                  String
+  phoneNumber              String?
+  birthday                 DateTime?
+  birthplace               String?
+  gender                   String
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  studentLetterSubmissions StudentLetterSubmission[]
+  studentReports           StudentReport[]
+}
+
+model Role {
+  id              Int              @id @default(autoincrement())
+  name            String           @unique
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  rolePermissions RolePermission[]
+  userRoles       UserRoles[]
+}
+
+model Permission {
+  id              Int              @id @default(autoincrement())
+  name            String           @unique
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  rolePermissions RolePermission[]
+}
+
+model RolePermission {
+  id           Int        @id @default(autoincrement())
+  role         Role       @relation(fields: [roleId], references: [id])
+  roleId       Int
+  permission   Permission @relation(fields: [permissionId], references: [id])
+  permissionId Int
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([roleId, permissionId])
+}
+
+model UserRoles {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  role      Role     @relation(fields: [roleId], references: [id])
+  roleId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, roleId])
+}
+
+model ActiveToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Letter {
+  id                   Int            @id @default(autoincrement())
+  institution          Institution    @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  institutionId        Int
+  user                 User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId               Int
+  letterHeadId         Int?
+  letterHead           LetterHead?    @relation(fields: [letterHeadId], references: [id], onDelete: Cascade)
+  letterName           String
+  referenceNumber      String?
+  expiredDate          Int?
+  letterNumberingStart Int?
+  category             LetterCategory
+  status               LetterStatus?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  letterTemplates          LetterTemplate[]
+  studentLetterSubmissions StudentLetterSubmission[]
+  generalLetterSubmissions GeneralLetterSubmission[]
+  letterDocuments          LetterDocument[]
+  letterAttributes         LetterAttribute[]
+}
+
+model LetterHead {
+  id            Int          @id @default(autoincrement())
+  institutionId Int?
+  institution   Institution? @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int
+  name          String
+  header        String
+  subheader     String
+  address       String
+  logo          String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  letter Letter[]
+}
+
+model LetterTemplate {
+  id        Int      @id @default(autoincrement())
+  letterId  Int
+  letter    Letter   @relation(fields: [letterId], references: [id], onDelete: Cascade)
+  content   String   @db.LongText
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model StudentLetterSubmission {
+  id                         Int                         @id @default(autoincrement())
+  token                      String                      @unique
+  studentId                  Int
+  student                    Student                     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  letterId                   Int
+  letter                     Letter                      @relation(fields: [letterId], references: [id], onDelete: Cascade)
+  letterNumber               String?
+  letterDate                 DateTime?
+  name                       String?
+  signatureType              SignatureType?
+  carbonCopy                 String?                     @db.LongText
+  status                     StudentLetterStatus
+  createdAt                  DateTime                    @default(now())
+  updatedAt                  DateTime                    @updatedAt
+  letterSignatures           LetterSignature[]
+  documentSubmissions        DocumentSubmission[]
+  letterAttributeSubmissions LetterAttributeSubmission[]
+  letterAttachments          LetterAttachment[]
+}
+
+model LetterAttachment {
+  id                        Int                      @id @default(autoincrement())
+  studentLetterSubmissionId Int?
+  studentLetterSubmission   StudentLetterSubmission? @relation(fields: [studentLetterSubmissionId], references: [id], onDelete: Cascade)
+  generalLetterSubmissionId Int?
+  generalLetterSubmission   GeneralLetterSubmission? @relation(fields: [generalLetterSubmissionId], references: [id], onDelete: Cascade)
+  content                   String                   @db.LongText
+  isVisible                 Boolean                  @default(false)
+  createdAt                 DateTime                 @default(now())
+  updatedAt                 DateTime                 @updatedAt
+}
+
+model GeneralLetterSubmission {
+  id                         Int                         @id @default(autoincrement())
+  token                      String                      @unique
+  userId                     Int
+  user                       User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  institutionId              Int
+  institution                Institution                 @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  letterId                   Int
+  letter                     Letter                      @relation(fields: [letterId], references: [id], onDelete: Cascade)
+  letterNumber               String?
+  name                       String?
+  letterDate                 DateTime?
+  carbonCopy                 String?                     @db.LongText
+  signatureType              SignatureType
+  createdAt                  DateTime                    @default(now())
+  updatedAt                  DateTime                    @updatedAt
+  letterSignatures           LetterSignature[]
+  letterAttributeSubmissions LetterAttributeSubmission[]
+  letterAttachments          LetterAttachment[]
+}
+
+model LetterSignature {
+  id                        Int                      @id @default(autoincrement())
+  studentLetterSubmissionId Int?
+  studentLetterSubmission   StudentLetterSubmission? @relation(fields: [studentLetterSubmissionId], references: [id], onDelete: Cascade)
+  generalLetterSubmissionId Int?
+  generalLetterSubmission   GeneralLetterSubmission? @relation(fields: [generalLetterSubmissionId], references: [id], onDelete: Cascade)
+  signature                 String?                  @db.LongText
+  verifiedAt                DateTime?
+  occupation                String?
+  uniqueCode                String?
+  token                     String
+  code                      String
+  officialId                Int
+  official                  Official                 @relation(fields: [officialId], references: [id], onDelete: Cascade)
+  position                  String                   @default("right")
+  isAcknowledged            Boolean                  @default(false)
+  createdAt                 DateTime                 @default(now())
+  updatedAt                 DateTime                 @updatedAt
+}
+
+model LetterDocument {
+  id                  Int                  @id @default(autoincrement())
+  letterId            Int
+  letter              Letter               @relation(fields: [letterId], references: [id], onDelete: Cascade)
+  documentName        String
+  fileType            String               @default("pdf")
+  isRequired          Boolean              @default(false)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  documentSubmissions DocumentSubmission[]
+}
+
+model DocumentSubmission {
+  id                        Int                     @id @default(autoincrement())
+  studentLetterSubmissionId Int
+  studentLetterSubmission   StudentLetterSubmission @relation(fields: [studentLetterSubmissionId], references: [id], onDelete: Cascade)
+  letterDocumentId          Int
+  letterDocument            LetterDocument          @relation(fields: [letterDocumentId], references: [id], onDelete: Cascade)
+  filePath                  String
+  createdAt                 DateTime                @default(now())
+  updatedAt                 DateTime                @updatedAt
+}
+
+model LetterAttribute {
+  id                         Int                         @id @default(autoincrement())
+  letterId                   Int
+  letter                     Letter                      @relation(fields: [letterId], references: [id], onDelete: Cascade)
+  attributeName              String
+  placeholder                String
+  label                      String
+  type                       String
+  isRequired                 Boolean                     @default(false)
+  isVisible                  Boolean                     @default(true)
+  isEditable                 Boolean                     @default(true)
+  createdAt                  DateTime                    @default(now())
+  updatedAt                  DateTime                    @updatedAt
+  letterAttributeSubmissions LetterAttributeSubmission[]
+}
+
+model LetterAttributeSubmission {
+  id                        Int                      @id @default(autoincrement())
+  letterAttributeId         Int
+  letterAttribute           LetterAttribute          @relation(fields: [letterAttributeId], references: [id], onDelete: Cascade)
+  studentLetterSubmissionId Int?
+  studentLetterSubmission   StudentLetterSubmission? @relation(fields: [studentLetterSubmissionId], references: [id], onDelete: Cascade)
+  generalLetterSubmissionId Int?
+  generalLetterSubmission   GeneralLetterSubmission? @relation(fields: [generalLetterSubmissionId], references: [id], onDelete: Cascade)
+  content                   String
+  createdAt                 DateTime                 @default(now())
+  updatedAt                 DateTime                 @updatedAt
+}
+
+model Announcement {
+  id            Int                       @id @default(autoincrement())
+  institutionId Int
+  institution   Institution               @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  userId        Int
+  user          User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content       String                    @db.LongText
+  visibleAt     AnnouncementVisibleStatus
+  status        Boolean
+  file          String?
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+}
+
+model Nodes {
+  id        Int       @id @default(autoincrement())
+  name      String
+  type      NodeTypes
+  parentId  Int?
+  parent    Nodes?    @relation("ParentChild", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Nodes[]   @relation("ParentChild")
+  path      String?
+  mimeType  String?
+  size      String?
+  ownerId   Int
+  owner     User      @relation(fields: [ownerId], references: [id])
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model ReportingPeriodes {
+  id              Int               @id @default(autoincrement())
+  name            String
+  description     String?
+  targetUser      ReportTargetUser
+  scope           ReportScopes
+  institutionId   Int
+  institution     Institution       @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  userId          Int
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  reportingStages ReportingStages[]
+}
+
+model ReportingStages {
+  id                 Int               @id @default(autoincrement())
+  reportingPeriodeId Int
+  reportingPeriode   ReportingPeriodes @relation(fields: [reportingPeriodeId], references: [id], onDelete: Cascade)
+  stageName          String
+  stageOrder         Int               @default(1)
+  startDate          DateTime
+  endDate            DateTime
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  studentReports     StudentReport[]
+  lecturerReports    LecturerReport[]
+}
+
+model StudentReport {
+  id               Int             @id @default(autoincrement())
+  reportingStageId Int
+  reportingStage   ReportingStages @relation(fields: [reportingStageId], references: [id], onDelete: Cascade)
+  studentId        Int
+  student          Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  officialId       Int
+  official         Official        @relation(fields: [officialId], references: [id], onDelete: Cascade)
+  content          String          @db.LongText
+  documentProved   String?
+  notes            String?         @db.LongText
+  verifiedAt       DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+}
+
+model LecturerReport {
+  id               Int             @id @default(autoincrement())
+  reportingStageId Int
+  reportingStage   ReportingStages @relation(fields: [reportingStageId], references: [id], onDelete: Cascade)
+  reporterId       Int
+  reporter         Official        @relation("SentReports", fields: [reporterId], references: [id])
+  validatorId      Int
+  validator        Official        @relation("ValidatedReports", fields: [validatorId], references: [id], onDelete: Cascade)
+  content          String          @db.LongText
+  documentProved   String?
+  notes            String?         @db.LongText
+  verifiedAt       DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+}
+
+model Activity {
+  id                   Int                   @id @default(autoincrement())
+  userId               Int
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  uniqueCode           String
+  activityName         String
+  description          String?
+  implementationDate   DateTime
+  location             String?
+  coordinates          String?
+  target               ActivityTarget
+  category             CategoryActivity
+  institutionId        Int?
+  institution          Institution?          @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  activityParticipants ActivityParticipant[]
+}
+
+model ActivityParticipant {
+  id                Int      @id @default(autoincrement())
+  activityId        Int
+  activity          Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  userId            Int
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isVerified        Boolean
+  proofOfAttendance String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
