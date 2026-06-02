@@ -115,9 +115,34 @@ export class LetterService {
     }
 
     if (user.roles.name === 'student') {
-      where.category = 'study_program';
+      const studentInstitutionId = user.student?.institutionId;
+      const parentId = user.student?.institution?.parentId;
+
       where.status = 'public';
-      where.institutionId = user.student.institutionId;
+
+      const studentConditions: Prisma.LetterWhereInput[] = [];
+      if (studentInstitutionId) {
+        studentConditions.push({ institutionId: studentInstitutionId });
+      }
+      if (parentId) {
+        studentConditions.push({
+          institutionId: parentId,
+          category: 'faculty',
+        });
+      }
+
+      if (studentConditions.length > 0) {
+        if (where.OR) {
+          const searchConditions = where.OR;
+          delete where.OR;
+          where.AND = [
+            { OR: searchConditions },
+            { OR: studentConditions },
+          ];
+        } else {
+          where.OR = studentConditions;
+        }
+      }
     }
 
     const [data, total] = await this.prismaService.$transaction([
