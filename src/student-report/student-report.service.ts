@@ -36,11 +36,19 @@ export class StudentReportService {
         }
 
         const studentId = user.student?.id;
+        const dataToCreate: any = {
+            studentId,
+            ...createDto
+        };
+
+        if (createDto.createdAt) {
+            dataToCreate.createdAt = new Date(createDto.createdAt);
+        } else {
+            delete dataToCreate.createdAt;
+        }
+
         return await this.prismaService.studentReport.create({
-            data: {
-                studentId,
-                ...createDto
-            },
+            data: dataToCreate,
         });
     }
 

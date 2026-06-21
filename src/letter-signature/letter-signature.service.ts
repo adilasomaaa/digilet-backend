@@ -40,9 +40,9 @@ export class LetterSignatureService {
     if (generalLetterSubmissionId) {
       where.generalLetterSubmissionId = generalLetterSubmissionId;
     }
-
+    
     if (user.roles.name == 'lecturer') {
-      where.officialId = officialId;
+      where.officialId = user.official.id;
     }
 
     const [data, total] = await this.prismaService.$transaction([
@@ -50,7 +50,7 @@ export class LetterSignatureService {
         skip: (Number(page) - 1) * Number(limit),
         take: Number(limit),
         orderBy: { createdAt: 'asc' },
-        where,
+        
         include: {
           studentLetterSubmission: {
             include: {
@@ -66,6 +66,7 @@ export class LetterSignatureService {
           },
           official: true,
         },
+        where
       }),
       this.prismaService.letterSignature.count({ where }),
     ]);

@@ -10,10 +10,10 @@ export class HomeController {
     async index() {
         return {
             message: 'Digilet API',
-            version: '1.0.0',
+            version: '1.0.3',
             status: 'running',
             createdBy: 'Yasdil Lasoma',
-            lastUpdated: '13 Februari 2026 17:13 WITA'
+            lastUpdated: '6 Juni 2026 17:13 WITA'
         };
     }
 

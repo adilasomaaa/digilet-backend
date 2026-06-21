@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, IsDateString } from 'class-validator';
 
 export class CreateStudentReportDto {
 
@@ -21,4 +21,9 @@ export class CreateStudentReportDto {
   @ApiProperty()
   @IsOptional()
   documentProved?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsDateString()
+  createdAt?: string;
 }
